@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
-import { Menu, X, Zap, LogOut, User, CreditCard, Building2 } from 'lucide-react';
+import { Menu, X, Zap, LogOut, User, CreditCard, Building2, Shield } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -38,16 +38,18 @@ export default function Navbar() {
                   <Building2 className="w-4 h-4 inline mr-1" />
                   Organization
                 </Link>
+                {user.role === 'admin' && (
+                  <Link href="/admin" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all">
+                    <Shield className="w-4 h-4 inline mr-1" />
+                    Admin
+                  </Link>
+                )}
                 <div className="w-px h-6 bg-slate-200 mx-1" />
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    {user.image ? (
-                      <img src={user.image} alt={user.name} className="w-8 h-8 rounded-full ring-2 ring-primary-100" />
-                    ) : (
                       <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
                         <User className="w-4 h-4 text-primary-600" />
                       </div>
-                    )}
                     <span className="text-sm font-medium text-slate-700 max-w-[120px] truncate">{user.name}</span>
                   </div>
                   <button
@@ -85,13 +87,9 @@ export default function Navbar() {
             {user ? (
               <>
                 <div className="flex items-center gap-3 px-3 py-3 border-b border-slate-100 mb-2">
-                  {user.image ? (
-                    <img src={user.image} alt={user.name} className="w-10 h-10 rounded-full" />
-                  ) : (
                     <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
                       <User className="w-5 h-5 text-primary-600" />
                     </div>
-                  )}
                   <div>
                     <p className="font-semibold text-sm text-slate-800">{user.name}</p>
                     <p className="text-xs text-slate-500">{user.credits} credits remaining</p>
@@ -100,6 +98,9 @@ export default function Navbar() {
                 <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Dashboard</Link>
                 <Link href="/credits" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Buy Credits</Link>
                 <Link href="/organization" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Organization</Link>
+                {user.role === 'admin' && (
+                  <Link href="/admin" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Admin Panel</Link>
+                )}
                 <button onClick={() => { logout(); setMobileOpen(false); }} className="w-full text-left px-3 py-2.5 text-sm font-medium text-danger rounded-lg hover:bg-red-50">
                   Logout
                 </button>

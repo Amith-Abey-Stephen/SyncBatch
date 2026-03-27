@@ -350,7 +350,7 @@ export default function DashboardPage() {
                     </p>
                     <div className="space-y-1 max-h-24 overflow-y-auto">
                       {parseErrors.map((err, i) => (
-                        <p key={i} className="text-xs text-amber-700">{err}</p>
+                        <p key={`${err}-${i}`} className="text-xs text-amber-700">{err}</p>
                       ))}
                     </div>
                   </div>
@@ -370,7 +370,7 @@ export default function DashboardPage() {
                     </thead>
                     <tbody>
                       {contacts.map((contact, i) => (
-                        <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors">
+                        <tr key={`${contact.phone}-${i}`} className="border-t border-slate-50 hover:bg-slate-50/50 transition-colors">
                           <td className="px-5 py-3 text-sm text-slate-400">{i + 1}</td>
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-2">
@@ -394,7 +394,7 @@ export default function DashboardPage() {
                   {/* Mobile cards */}
                   <div className="sm:hidden space-y-2 p-4">
                     {contacts.map((contact, i) => (
-                      <div key={i} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                      <div key={`${contact.phone}-${i}`} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-xs font-bold text-primary-600">
                             {contact.name[0]?.toUpperCase()}
@@ -444,8 +444,11 @@ export default function DashboardPage() {
                   <div className="space-y-2">
                     <p className="text-sm text-slate-500">Automatically add contacts directly to your Google account.</p>
                     <div className="bg-blue-50/70 p-2.5 rounded-lg border border-blue-100">
-                      <p className="text-xs text-blue-800 leading-relaxed">
+                      <p className="text-xs text-blue-800 leading-relaxed mb-1">
                         ✨ <strong className="font-semibold">Pro-tip for iPhone:</strong> Enable Google Contacts sync in your iOS settings for an instant, magic experience without downloading any files!
+                      </p>
+                      <p className="text-[10px] text-blue-600 font-medium">
+                        (How? Go to Settings ➔ Contacts ➔ Accounts ➔ Gmail, and toggle Contacts ON)
                       </p>
                     </div>
                   </div>
@@ -580,7 +583,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="max-h-60 overflow-y-auto">
                     {syncResults.skipped.map((c, i) => (
-                      <div key={i} className="flex items-center justify-between px-5 py-3 border-t border-slate-50">
+                      <div key={`${c.phone}-${i}`} className="flex items-center justify-between px-5 py-3 border-t border-slate-50">
                         <div className="flex items-center gap-3">
                           <div className="w-7 h-7 bg-amber-100 rounded-full flex items-center justify-center text-xs font-bold text-amber-600">
                             {c.name[0]?.toUpperCase()}

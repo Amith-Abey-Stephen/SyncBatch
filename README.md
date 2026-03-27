@@ -1,10 +1,12 @@
 # ⚡ SyncBatch
 
-**A minimal, high-performance SaaS platform to sync contacts from Excel to mobile devices.**
+**A minimal, high-performance SaaS platform to sync contacts from Excel to mobile devices (iOS & Android).**
 
-SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync them directly to their Google Contacts or download them as a `.vcf` file for iPhone. Designed with built-in organization modes and a robust credit-based payment model.
+SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync them directly to their Google Contacts or download them as a `.vcf` file for iPhone. Designed with built-in organization modes, a robust credit-based payment model, and an advanced admin control center.
 
-## 🌟 Features
+---
+
+## 🌟 Core Features
 
 *   **Excel/CSV Parsing**: Smart column detection with automatic phone number normalization.
 *   **Direct Google Sync**: Leverages the Google People API to batch-insert contacts straight into your account.
@@ -12,68 +14,81 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 *   **Smart Deduplication**: Checks existing Google Contacts to actively prevent duplicates before making API calls.
 *   **Credit/Payment System**: Razorpay integration with 'Pay Per Sync' models spanning Personal and Institutional limits.
 *   **Organization Mode**: Allows institutions to create teams, onboard members via secure invite links, and assign remote "sync requests".
-*   **Built-in Security**: Hardened against XSS (React Server Rendering), CSRF (SameSite Lax HTTP-only cookies), and DoS (Upload limits & Security Headers).
+*   **Admin Dashboard**: High-density statistics tracking revenue, user registrations, and platform health.
+*   **Subscription Gating**: Intelligent UI guards that restrict advanced organization features to Institutional and Admin tiers.
+*   **Security First**: Hardened against XSS, CSRF, and DoS (Upload limits & Security Headers).
 
-## 🔒 Security Posture & Architecture
+---
+
+## 🔄 Detailed User Flows
+
+### 1. Personal Flow (For Individuals)
+*   **Step 1: Onboarding**: Sign in instantly using Google OAuth 2.0.
+*   **Step 2: Upload**: Drag & Drop your Excel/CSV file (Max 5MB).
+*   **Step 3: Preview**: View exactly which contacts were found, remove any entries, and check for normalization warnings.
+*   **Step 4: Sync Method**: 
+    *   **Google Sync**: Automatically pushes contacts to your Google account (works for both Android and iPhone if sync is enabled).
+    *   **iPhone VCF**: Download a generated vCard file for manual import on iOS devices.
+*   **Step 5: Results**: Get a report of successfully added vs. skipped (duplicates) contacts.
+
+### 2. Institutional Flow (For Organizations)
+*   **Step 1: Formation**: Create an Organization (Requires Institution Pack).
+*   **Step 2: Team Building**: Generate unique invite links and send them to members.
+*   **Step 3: Request Creation**: Upload a contact list and create a "Sync Request" targeting specific members.
+*   **Step 4: Member Action**: Members receive a notification on their dashboard and can "Accept" the request to instantly sync those contacts to their phone without having the original file.
+*   **Step 5: Monitoring**: Org owners can track which members have completed the sync.
+
+---
+
+## 💳 Subscriptions & Limits
+
+SyncBatch uses a credit-based system. **1 Sync = 1 Credit**.
+
+### Personal Packs (Single-User Focus)
+- **Intro Pack (₹29)**: 3 syncs, 100 contacts/sync limit.
+- **Power Pack (₹79)**: 10 syncs, 500 contacts/sync limit.
+- **Pro Pack (₹149)**: 25 syncs, 1,000 contacts/sync limit.
+
+### Institution Packs (Multi-User Collaboration)
+- **Dept Starter (₹499)**: 50 requests, 2,000 contacts/sync limit.
+- **Campus Elite (₹1,499)**: 200 requests, 10,000 contacts/sync limit, Admin control panel access.
+
+---
+
+## 🔒 Security Posture
 
 *   **Stateless JWT Sessions**: Authenticated state is securely kept in Edge-compatible encrypted JWT cookies (`jose`), preventing session hijacking and enforcing `HttpOnly` combined with `Secure` flags.
 *   **Security Headers**: Integrated essential defenses against MIME sniffing and Clickjacking (HSTS, X-Frame-Options, X-Content-Type-Options) natively in the `next.config.mjs`.
-*   **Data Leakage Prevention**: All MongoDB queries specifically filter out OAuth tokens when returning profile data to the client, preventing accidental exposure of sensitive Google access tokens.
-*   **Upload Safety**: strict file-size limitations (Max 5MB) drop DoS vectors from massive memory-buffer parsing.
-*   **Privacy-First Approach**: User contacts are only maintained transiently during processing. They are not indexed or retained functionally against active databases for marketing purposes.
+*   **Token Protection**: All MongoDB queries specifically filter out OAuth tokens when returning profile data to the client, preventing accidental exposure of sensitive Google access tokens.
+*   **Privacy-First**: No contact data is stored permanently. Contacts from uploads are only used for processing and are filtered out of the database after the sync session.
 
-## 🚀 Quick Setup Guide
+---
+
+## 🚀 Setup & Installation
 
 ### 1. Requirements
-
 *   Node.js 18+
-*   MongoDB Instance (Local or Atlas)
-*   Google Cloud Console Account (OAuth Client ID)
-*   Razorpay Dashboard
+*   MongoDB Instance
+*   Google Cloud Console Account (Enable People API)
+*   Razorpay API Keys
 
-### 2. Environment Variables
-
-Create a `.env.local` file in the root directory:
-
+### 2. Environment Variables (.env.local)
 ```env
-# Database
-MONGODB_URI=mongodb://localhost:27017/syncbatch
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
-
-# Session Auth (run: openssl rand -base64 32)
-SESSION_SECRET=your_32_byte_secret
-
-# Application
+MONGODB_URI=mongodb://your_uri
+GOOGLE_CLIENT_ID=your_id
+GOOGLE_CLIENT_SECRET=your_secret
+SESSION_SECRET=your_random_string
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Payments
-RAZORPAY_KEY_ID=your_razorpay_id
-RAZORPAY_KEY_SECRET=your_razorpay_secret
-NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_id
+RAZORPAY_KEY_ID=your_id
+RAZORPAY_KEY_SECRET=your_secret
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_id
 ```
 
-### 3. Installation & Run
-
+### 3. Run Locally
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
-
-Navigate to `http://localhost:3000`.
-
-## 🛠️ Technology Stack
-
-*   **Frontend**: React, Next.js (App Router), Tailwind CSS v4, Lucide Icons
-*   **Backend**: Next.js API Routes, Mongoose, Node.js
-*   **Authentication**: Google OAuth 2.0, `jose` JWTs
-*   **Payments**: Razorpay
-*   **Utilities**: `xlsx` (parsing), `react-hot-toast` (alerts), `react-dropzone` (uploads)
 
 ---
 *A product by INOVUS LABS IEDC*

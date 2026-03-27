@@ -44,6 +44,7 @@ export async function POST(request) {
       userId: session.userId,
       amount: plan.price,
       creditsAdded: plan.credits,
+      planId: plan.id,
       paymentId: '',
       orderId: order.id,
       status: 'pending',

@@ -3,6 +3,7 @@ import { getSession } from '@/lib/session';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 import Transaction from '@/lib/models/Transaction';
+import { getPlanById } from '@/lib/plans';
 import crypto from 'crypto';
 
 export async function POST(request) {
@@ -41,6 +42,16 @@ export async function POST(request) {
     const user = await User.findById(session.userId);
     user.credits += transaction.creditsAdded;
     user.plan = 'paid';
+
+    // Update Max Contacts Limit based on plan
+    if (transaction.planId) {
+      const plan = getPlanById(transaction.planId);
+      if (plan && plan.maxContacts) {
+        // Upgrade limit if new plan is higher than current
+        user.maxContactsLimit = Math.max(user.maxContactsLimit || 0, plan.maxContacts);
+      }
+    }
+
     await user.save();
 
     return NextResponse.json({

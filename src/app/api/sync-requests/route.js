@@ -50,8 +50,19 @@ export async function POST(request) {
 
     await connectDB();
 
-    // Check credits (1 credit per sync request)
+    // Fetch user for credit & limit check
     const user = await User.findById(session.userId);
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+    // Check contact limit for plan
+    const limit = user.maxContactsLimit || 50;
+    if (contacts.length > limit) {
+      return NextResponse.json({ 
+        error: `Sync limit exceeded. Your current pack allows up to ${limit} contacts per sync. Please upgrade to a higher pack for larger lists.` 
+      }, { status: 403 });
+    }
+
+    // Check credits (1 credit per sync request)
     if (user.credits < 1 && user.freeUsed) {
       return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 });
     }

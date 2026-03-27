@@ -45,6 +45,15 @@ export async function POST(request) {
     }
 
     await connectDB();
+    const user = await User.findById(session.userId);
+
+    // Only allow admin or users with institutional plan (maxContactsLimit >= 2000)
+    const isInstitution = user.role === 'admin' || (user.maxContactsLimit && user.maxContactsLimit >= 2000);
+    if (!isInstitution) {
+      return NextResponse.json({ 
+        error: 'Institutional synchronization requires an Institution Plan. Please upgrade in the Credits page to unlock organization features.' 
+      }, { status: 403 });
+    }
 
     // Check if user already owns an org
     const existing = await Organization.findOne({ ownerId: session.userId });

@@ -9,6 +9,8 @@ const UserSchema = new mongoose.Schema({
   credits: { type: Number, default: 0 },
   freeUsed: { type: Boolean, default: false },
   plan: { type: String, enum: ['free', 'paid'], default: 'free' },
+  role: { type: String, enum: ['admin', 'user'], default: 'user' },
+  maxContactsLimit: { type: Number, default: 50 },
   orgId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', default: null },
   syncPreference: { type: String, enum: ['google', 'iphone'], default: 'google' },
   googleAccessToken: { type: String, default: '' },

@@ -24,6 +24,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Check contact limit for plan
+    const limit = user.maxContactsLimit || 50;
+    if (contacts.length > limit) {
+      return NextResponse.json({ 
+        error: `Sync limit exceeded. Your current pack allows up to ${limit} contacts per sync. Please upgrade to a higher pack for larger lists.` 
+      }, { status: 403 });
+    }
+
     // Check credits
     const hasCredits = !user.freeUsed || user.credits > 0;
     if (!hasCredits) {

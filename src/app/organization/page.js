@@ -277,8 +277,8 @@ export default function OrganizationPage() {
                           <div key={req._id} className="bg-slate-50 rounded-xl p-4">
                             <p className="text-sm font-semibold text-slate-800 mb-2">{req.listId?.title || 'Contact List'}</p>
                             <div className="flex flex-wrap gap-2">
-                              {req.targetUsers?.map((target, i) => (
-                                <span key={i} className={`text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1 ${
+                              {req.targetUsers?.map((target) => (
+                                <span key={target.userId?._id || target.userId} className={`text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1 ${
                                   target.status === 'done' ? 'bg-green-50 text-green-700'
                                     : target.status === 'ignored' ? 'bg-red-50 text-red-700'
                                     : 'bg-amber-50 text-amber-700'
@@ -307,7 +307,27 @@ export default function OrganizationPage() {
           ) : (
             // No org - show create form
             <div className="fade-in-up">
-              {showCreateForm ? (
+              {!(user.role === 'admin' || user.maxContactsLimit >= 2000) ? (
+                <div className="bg-white rounded-3xl p-12 border border-slate-100 shadow-xl shadow-slate-200/50 text-center max-w-lg mx-auto overflow-hidden relative">
+                   <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                      <Zap className="w-32 h-32 text-primary-600" />
+                   </div>
+                   <div className="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Building2 className="w-8 h-8 text-purple-600" />
+                   </div>
+                   <h2 className="text-2xl font-black text-slate-800 mb-3 tracking-tight">Institution Mode Locked</h2>
+                   <p className="text-sm text-slate-500 mb-8 leading-relaxed">
+                      Organization features like member invites and bulk sync requests are only available on <strong>Institutional Plans</strong>.
+                   </p>
+                   <button
+                     onClick={() => router.push('/credits')}
+                     className="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:shadow-primary-500/20 transition-all text-sm"
+                   >
+                     Upgrade to Institution Plan
+                     <ArrowRight className="w-4 h-4" />
+                   </button>
+                </div>
+              ) : showCreateForm ? (
                 <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm max-w-lg mx-auto">
                   <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-primary-600" />
