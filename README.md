@@ -16,6 +16,7 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 *   **Organization Mode**: Allows institutions to create teams, onboard members via secure invite links, and assign remote "sync requests".
 *   **Admin Dashboard**: High-density statistics tracking revenue, user registrations, and platform health.
 *   **Subscription Gating**: Intelligent UI guards that restrict advanced organization features to Institutional and Admin tiers.
+*   **Legal Compliance**: Built-in [Privacy Policy](file:///d:/Drive%20D/phone/syncbatch/src/app/privacy/page.js) and [Terms of Service](file:///d:/Drive%20D/phone/syncbatch/src/app/terms/page.js) pages for platform transparency.
 *   **Security First**: Hardened against XSS, CSRF, and DoS (Upload limits & Security Headers).
 
 ---
