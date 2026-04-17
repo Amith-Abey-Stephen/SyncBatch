@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getGoogleTokens, getGoogleUser } from '@/lib/google';
-import { createSession } from '@/lib/session';
+import { createSession, encrypt } from '@/lib/session';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 
@@ -50,15 +50,30 @@ export async function GET(request) {
       await user.save();
     }
 
-    // Create session
-    await createSession({
+    // Create session token
+    const sessionData = {
       userId: user._id.toString(),
       email: user.email,
       name: user.name,
       image: user.image,
+    };
+    
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const sessionToken = await encrypt({ ...sessionData, expiresAt: expiresAt.toISOString() });
+
+    // Create redirect response
+    const response = NextResponse.redirect(new URL('/dashboard', request.url));
+    
+    // Set cookie on response manually to ensure it persists through the redirect
+    response.cookies.set('session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      expires: expiresAt,
+      sameSite: 'lax',
+      path: '/',
     });
 
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return response;
   } catch (error) {
     console.error('Auth callback error:', error);
     return NextResponse.redirect(new URL('/login?error=server_error', request.url));

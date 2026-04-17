@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 import {
   Upload, FileSpreadsheet, Smartphone, Monitor, CheckCircle, XCircle,
   AlertTriangle, CreditCard, ArrowRight, Download, Eye, ChevronDown,
-  Zap, Shield, RefreshCw, X, Users
+  Zap, Shield, RefreshCw, X, Users, Trash2, Plus
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -27,6 +27,8 @@ export default function DashboardPage() {
   const [syncResults, setSyncResults] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [operation, setOperation] = useState('add'); // add, delete
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -101,7 +103,8 @@ export default function DashboardPage() {
           }));
         }, 500);
 
-        const res = await fetch('/api/sync/google', {
+        const endpoint = operation === 'add' ? '/api/sync/google' : '/api/sync/delete';
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contacts }),
@@ -113,15 +116,19 @@ export default function DashboardPage() {
         const data = await res.json();
 
         if (!res.ok) {
-          toast.error(data.error || 'Sync failed');
+          toast.error(data.error || `${operation === 'add' ? 'Sync' : 'Delete'} failed`);
           setStep('method');
           setSyncing(false);
           return;
         }
 
-        setSyncResults(data);
+        setSyncResults({
+          ...data,
+          addedCount: data.addedCount || data.deletedCount,
+          skippedCount: data.skippedCount
+        });
         setStep('results');
-        toast.success(`${data.addedCount} contacts synced!`);
+        toast.success(`${data.addedCount || data.deletedCount} contacts ${operation === 'add' ? 'synced' : 'deleted'}!`);
         refreshUser();
       } else {
         // iPhone VCF download
@@ -280,28 +287,64 @@ export default function DashboardPage() {
             })}
           </div>
 
+          {/* Operation Toggle */}
+          {step === 'upload' && (
+            <div className="flex justify-center mb-6 fade-in-up">
+              <div className="bg-slate-100 p-1 rounded-xl flex items-center">
+                <button
+                  onClick={() => setOperation('add')}
+                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    operation === 'add' 
+                      ? 'bg-white text-primary-600 shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  <Plus className="w-4 h-4 inline mr-1.5" />
+                  Add Contacts
+                </button>
+                <button
+                  onClick={() => setOperation('delete')}
+                  className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all ${
+                    operation === 'delete' 
+                      ? 'bg-white text-danger shadow-sm' 
+                      : 'text-slate-500 hover:text-slate-700'
+                  }`}
+                >
+                  <Trash2 className="w-4 h-4 inline mr-1.5" />
+                  Bulk Delete
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Upload Step */}
           {step === 'upload' && (
             <div className="fade-in-up">
               <div
                 {...getRootProps()}
                 className={`bg-white rounded-2xl border-2 border-dashed p-12 text-center cursor-pointer transition-all ${
-                  isDragActive ? 'border-primary-400 bg-primary-50/50' : 'border-slate-200 hover:border-primary-300 hover:bg-slate-50'
+                  isDragActive 
+                    ? (operation === 'add' ? 'border-primary-400 bg-primary-50/50' : 'border-danger bg-red-50/50')
+                    : 'border-slate-200 hover:border-primary-300 hover:bg-slate-50'
                 }`}
               >
                 <input {...getInputProps()} />
-                <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 ${
+                  operation === 'add' ? 'bg-primary-50' : 'bg-red-50'
+                }`}>
                   {uploading ? (
-                    <RefreshCw className="w-8 h-8 text-primary-600 animate-spin" />
-                  ) : (
+                    <RefreshCw className={`w-8 h-8 animate-spin ${operation === 'add' ? 'text-primary-600' : 'text-danger'}`} />
+                  ) : operation === 'add' ? (
                     <Upload className="w-8 h-8 text-primary-600" />
+                  ) : (
+                    <Trash2 className="w-8 h-8 text-danger" />
                   )}
                 </div>
                 <h3 className="text-lg font-semibold text-slate-800 mb-2">
-                  {uploading ? 'Processing...' : isDragActive ? 'Drop your file here' : 'Upload Contact File'}
+                  {uploading ? 'Processing...' : isDragActive ? 'Drop your file here' : (operation === 'add' ? 'Upload Contacts to Add' : 'Upload Contacts to Delete')}
                 </h3>
                 <p className="text-sm text-slate-400 mb-4">
-                  Drag & drop your Excel or CSV file, or click to browse
+                  Drag & drop your Excel or CSV file with the contacts you {operation === 'add' ? 'want to add' : 'want to remove'}
                 </p>
                 <div className="flex items-center justify-center gap-2 text-xs text-slate-400">
                   <FileSpreadsheet className="w-3.5 h-3.5" />
@@ -461,16 +504,19 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => setSyncMethod('iphone')}
+                  disabled={operation === 'delete'}
                   className={`bg-white rounded-2xl p-6 border-2 text-left transition-all ${
                     syncMethod === 'iphone' ? 'border-primary-500 shadow-lg shadow-primary-600/10 ring-2 ring-primary-100' : 'border-slate-200 hover:border-primary-200'
-                  }`}
+                  } ${operation === 'delete' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-4">
                     <Smartphone className="w-6 h-6 text-purple-600" />
                   </div>
                   <h3 className="font-bold text-slate-800 mb-1">iPhone Import (VCF)</h3>
-                  <p className="text-sm text-slate-500">Download a .vcf file and import it on your iPhone. Works with all iOS devices.</p>
-                  {syncMethod === 'iphone' && (
+                  <p className="text-sm text-slate-500">
+                    {operation === 'delete' ? 'VCF delete is not supported. Use Google Sync to delete.' : 'Download a .vcf file and import it on your iPhone. Works with all iOS devices.'}
+                  </p>
+                  {syncMethod === 'iphone' && operation === 'add' && (
                     <div className="mt-3 flex items-center gap-1.5 text-primary-600 text-xs font-semibold">
                       <CheckCircle className="w-4 h-4" /> Selected
                     </div>
@@ -492,12 +538,54 @@ export default function DashboardPage() {
                   ← Back to preview
                 </button>
                 <button
-                  onClick={handleSync}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl shadow-lg shadow-primary-600/25 hover:shadow-primary-600/40 transition-all text-sm"
+                  onClick={() => {
+                    if (operation === 'delete') {
+                      setShowConfirmDelete(true);
+                    } else {
+                      handleSync();
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl shadow-lg transition-all text-sm ${
+                    operation === 'add' 
+                      ? 'bg-gradient-to-r from-primary-600 to-primary-700 shadow-primary-600/25 hover:shadow-primary-600/40' 
+                      : 'bg-gradient-to-r from-red-600 to-red-700 shadow-red-600/25 hover:shadow-red-600/40'
+                  }`}
                 >
-                  <Zap className="w-4 h-4" />
-                  Sync Now ({contacts.length} contacts)
+                  {operation === 'add' ? <Zap className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
+                  {operation === 'add' ? 'Sync Now' : 'Delete Now'} ({contacts.length} contacts)
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Delete Confirmation Modal */}
+          {showConfirmDelete && (
+            <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+                <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="w-8 h-8 text-danger" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 text-center mb-2">Confirm Delete</h3>
+                <p className="text-slate-500 text-center text-sm mb-6 leading-relaxed">
+                  Are you sure you want to delete these <span className="font-bold text-slate-900">{contacts.length} contacts</span>? This action cannot be undone.
+                </p>
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={() => {
+                      setShowConfirmDelete(false);
+                      handleSync();
+                    }}
+                    className="w-full py-3 bg-danger text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                  >
+                    Yes, Delete All
+                  </button>
+                  <button
+                    onClick={() => setShowConfirmDelete(false)}
+                    className="w-full py-3 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -541,18 +629,26 @@ export default function DashboardPage() {
             <div className="fade-in-up space-y-4">
               {/* Summary */}
               <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+                  operation === 'add' ? 'bg-green-100' : 'bg-red-100'
+                }`}>
+                  {operation === 'add' ? (
+                    <CheckCircle className="w-8 h-8 text-green-600" />
+                  ) : (
+                    <Trash2 className="w-8 h-8 text-danger" />
+                  )}
                 </div>
-                <h3 className="text-2xl font-bold text-slate-800 mb-2">Sync Complete!</h3>
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">
+                  {operation === 'add' ? 'Sync Complete!' : 'Deletion Complete!'}
+                </h3>
                 <p className="text-slate-500 text-sm mb-6">
                   Your contacts have been processed successfully
                 </p>
 
                 <div className="grid sm:grid-cols-3 gap-4 max-w-lg mx-auto">
-                  <div className="bg-green-50 rounded-xl p-4">
-                    <p className="text-2xl font-bold text-green-700">{syncResults.addedCount}</p>
-                    <p className="text-xs text-green-600 font-medium">Added</p>
+                  <div className={`${operation === 'add' ? 'bg-green-50' : 'bg-red-50'} rounded-xl p-4`}>
+                    <p className={`text-2xl font-bold ${operation === 'add' ? 'text-green-700' : 'text-danger'}`}>{syncResults.addedCount}</p>
+                    <p className={`text-xs font-medium ${operation === 'add' ? 'text-green-600' : 'text-danger'}`}>{operation === 'add' ? 'Added' : 'Deleted'}</p>
                   </div>
                   <div className="bg-amber-50 rounded-xl p-4">
                     <p className="text-2xl font-bold text-amber-700">{syncResults.skippedCount}</p>
@@ -606,8 +702,8 @@ export default function DashboardPage() {
                   onClick={resetFlow}
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold rounded-xl shadow-lg shadow-primary-600/25 transition-all text-sm"
                 >
-                  <Upload className="w-4 h-4" />
-                  Sync More Contacts
+                  {operation === 'add' ? <Upload className="w-4 h-4" /> : <RefreshCw className="w-4 h-4" />}
+                  {operation === 'add' ? 'Sync More Contacts' : 'Back to Upload'}
                 </button>
                 <button
                   onClick={() => router.push('/credits')}

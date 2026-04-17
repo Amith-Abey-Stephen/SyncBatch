@@ -10,6 +10,7 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 
 *   **Excel/CSV Parsing**: Smart column detection with automatic phone number normalization.
 *   **Direct Google Sync**: Leverages the Google People API to batch-insert contacts straight into your account.
+*   **Bulk Management**: Advanced "Bulk Delete" mode to remove uploaded contact batches from your Google account in seconds.
 *   **iPhone Support**: Dynamic generation of `.vcf` (vCard) files mapping directly to Apple's native importing.
 *   **Smart Deduplication**: Checks existing Google Contacts to actively prevent duplicates before making API calls.
 *   **Credit/Payment System**: Razorpay integration with 'Pay Per Sync' models spanning Personal and Institutional limits.
@@ -25,12 +26,13 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 
 ### 1. Personal Flow (For Individuals)
 *   **Step 1: Onboarding**: Sign in instantly using Google OAuth 2.0.
-*   **Step 2: Upload**: Drag & Drop your Excel/CSV file (Max 5MB).
-*   **Step 3: Preview**: View exactly which contacts were found, remove any entries, and check for normalization warnings.
-*   **Step 4: Sync Method**: 
-    *   **Google Sync**: Automatically pushes contacts to your Google account (works for both Android and iPhone if sync is enabled).
-    *   **iPhone VCF**: Download a generated vCard file for manual import on iOS devices.
-*   **Step 5: Results**: Get a report of successfully added vs. skipped (duplicates) contacts.
+*   **Step 2: Method**: Choose between **Add Mode** (Bulk Sync) or **Delete Mode** (Bulk Remove).
+*   **Step 3: Upload**: Drag & Drop your Excel/CSV file (Max 5MB).
+*   **Step 4: Preview**: View exactly which contacts were found, remove any entries, and check for normalization warnings.
+*   **Step 5: Execution**:
+    *   **Google Sync/Delete**: Automatically pushes or removes contacts from your Google account.
+    *   **iPhone VCF**: (Add mode only) Download a generated vCard file for manual import on iOS devices.
+*   **Step 6: Results**: Get a report of successfully processed contacts.
 
 ### 2. Institutional Flow (For Organizations)
 *   **Step 1: Formation**: Create an Organization (Requires Institution Pack).
