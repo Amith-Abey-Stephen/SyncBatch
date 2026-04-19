@@ -1,5 +1,6 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ContactForm from '@/components/ContactForm';
 import Link from 'next/link';
 import { Upload, Smartphone, Shield, Zap, Users, CreditCard, CheckCircle, ArrowRight, FileSpreadsheet, RefreshCw, Building2, Mail, Send } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/next"
@@ -313,7 +314,7 @@ export default function Home() {
 
                 <div className="space-y-6">
                   {[
-                    { icon: Mail, title: 'Email Support', detail: 'support@syncbatch.com', desc: 'Response within 24 hours' },
+                    { icon: Mail, title: 'Email Support', detail: 'support@inovuslabs.org', desc: 'Response within 24 hours' },
                     { icon: Shield, title: 'Security First', detail: 'Enterprise-grade encryption', desc: 'Your data is always private' }
                   ].map((item, i) => (
                     <div key={i} className="flex items-start gap-4">
@@ -331,36 +332,7 @@ export default function Home() {
               </div>
 
               <div className="fade-in-up-delayed">
-                <div className="bg-white rounded-[2.5rem] p-8 sm:p-10 border border-slate-100 shadow-2xl shadow-slate-200/60 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-                    <Send className="w-32 h-32 text-primary-600" />
-                  </div>
-                  
-                  <form className="space-y-5 relative z-10">
-                    <div className="grid sm:grid-cols-2 gap-5">
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
-                        <input type="text" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold" placeholder="John Doe" />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
-                        <input type="email" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold" placeholder="john@example.com" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Subject</label>
-                      <input type="text" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold" placeholder="How can we help?" />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Message</label>
-                      <textarea className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold resize-none" rows={4} placeholder="Your message here..." />
-                    </div>
-                    <button type="submit" className="w-full py-4 bg-primary-600 text-white font-black rounded-2xl shadow-xl shadow-primary-600/20 text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                      Send Message
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </form>
-                </div>
+                <ContactForm />
               </div>
             </div>
           </div>

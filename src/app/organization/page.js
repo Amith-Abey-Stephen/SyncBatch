@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 import ConfirmModal from '@/components/ConfirmModal';
 import Navbar from '@/components/Navbar';
@@ -11,7 +12,7 @@ import toast from 'react-hot-toast';
 import {
   Building2, Users, Link2, Copy, Plus, Send, CheckCircle, Clock,
   XCircle, Upload, FileSpreadsheet, Zap, ArrowRight, X, RefreshCw,
-  MoreVertical, ShieldCheck, Mail, ExternalLink, Activity, LogOut, Crown, Trash2, AlertTriangle, User, Eye, Shield
+  MoreVertical, ShieldCheck, Mail, ExternalLink, Activity, LogOut, Crown, Trash2, AlertTriangle, User, Eye, Shield, MessageSquare
 } from 'lucide-react';
 
 export default function OrganizationPage() {
@@ -317,12 +318,21 @@ export default function OrganizationPage() {
       <Navbar />
       <main className="pt-24 pb-12 min-h-screen">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 fade-in-up">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-              <Building2 className="w-7 h-7 text-primary-600" />
-              Organization
-            </h1>
-            <p className="text-slate-500 text-sm">Create or manage your organization and send sync requests to members</p>
+          <div className="mb-8 fade-in-up flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                <Building2 className="w-7 h-7 text-primary-600" />
+                Organization
+              </h1>
+              <p className="text-slate-500 text-sm">Create or manage your organization and send sync requests to members</p>
+            </div>
+            <Link 
+              href="/contact"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-white hover:text-primary-600 hover:border-primary-200 transition-all text-xs"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              Need Help? Contact Support
+            </Link>
           </div>
 
           {orgLoading ? (

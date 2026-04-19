@@ -44,6 +44,7 @@ export default function Footer() {
             <ul className="space-y-4 text-sm font-bold">
               <li><Link href="/privacy" className="hover:text-primary-500 transition-all hover:translate-x-1 inline-block">Privacy Shield</Link></li>
               <li><Link href="/terms" className="hover:text-primary-500 transition-all hover:translate-x-1 inline-block">Service Terms</Link></li>
+              <li><Link href="/contact" className="hover:text-primary-500 transition-all hover:translate-x-1 inline-block">Contact Support</Link></li>
             </ul>
           </div>
 
@@ -51,7 +52,7 @@ export default function Footer() {
           <div>
             <h4 className="text-xs font-black text-white mb-6 uppercase tracking-widest">Connect</h4>
             <ul className="space-y-4 text-sm font-bold">
-              <li className="text-slate-500 break-all">inovuslabs@kjcmt.ac.in</li>
+              <li className="text-slate-500 break-all">support@inovuslabs.org</li>
               <li>
                 <a href="https://inovuslabs.org/" target="_blank" rel="noopener noreferrer" className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white hover:bg-slate-700 transition-all inline-block">
                   Visit INOVUS LABS
