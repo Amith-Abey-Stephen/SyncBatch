@@ -15,27 +15,29 @@ export async function GET() {
     
     const user = await User.findById(session.userId);
     
-    let org = await Organization.findOne({
+    const orgs = await Organization.find({
       $or: [
         { ownerId: session.userId },
         { members: session.userId }
       ]
     }).populate('members', 'name email image');
     
-    // Lazy migration: add slug if missing
-    if (org && !org.slug) {
-      const slugify = (text) => text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
-      let baseSlug = slugify(org.name);
-      let slug = baseSlug;
-      let counter = 1;
-      while (await Organization.findOne({ slug, _id: { $ne: org._id } })) {
-        slug = `${baseSlug}-${counter++}`;
+    // Lazy migration: add slugs if missing
+    for (const org of orgs) {
+      if (!org.slug) {
+        const slugify = (text) => text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+        let baseSlug = slugify(org.name);
+        let slug = baseSlug;
+        let counter = 1;
+        while (await Organization.findOne({ slug, _id: { $ne: org._id } })) {
+          slug = `${baseSlug}-${counter++}`;
+        }
+        org.slug = slug;
+        await org.save();
       }
-      org.slug = slug;
-      await org.save();
     }
 
-    return NextResponse.json({ org });
+    return NextResponse.json({ orgs });
   } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
@@ -56,21 +58,25 @@ export async function POST(request) {
     await connectDB();
     const user = await User.findById(session.userId);
 
-    // Only allow admin or users with institutional plan (maxContactsLimit >= 2000)
-    const isInstitution = user.role === 'admin' || (user.maxContactsLimit && user.maxContactsLimit >= 2000);
+    // Check institutional plan & org limits
+    const isInstitution = user.role === 'admin' || (user.maxOrgsLimit && user.maxOrgsLimit >= 1);
     if (!isInstitution) {
       return NextResponse.json({ 
-        error: 'Institutional synchronization requires an Institution Plan. Please upgrade in the Credits page to unlock organization features.' 
+        error: 'Organization creation requires an Institution Plan. Please upgrade in the Credits page.' 
+      }, { status: 403 });
+    }
+
+    // Check how many orgs user already owns
+    const ownedCount = await Organization.countDocuments({ ownerId: session.userId });
+    if (user.role !== 'admin' && ownedCount >= user.maxOrgsLimit) {
+      return NextResponse.json({ 
+        error: `Plan Limit Reached: Your current plan allows up to ${user.maxOrgsLimit} organizations. Please upgrade for more.` 
       }, { status: 403 });
     }
 
     const slugify = (text) => text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
 
-    // Check if user already owns an org
-    const existing = await Organization.findOne({ ownerId: session.userId });
-    if (existing) {
-      return NextResponse.json({ error: 'You already own an organization' }, { status: 400 });
-    }
+    // Users can own multiple organizations as long as they have the plan
 
     let slug = slugify(name);
     // Ensure slug is unique
@@ -95,7 +101,10 @@ export async function POST(request) {
     // Update user
     await User.findByIdAndUpdate(session.userId, { orgId: org._id });
 
-    return NextResponse.json({ org });
+    // Populate members for the response
+    const populatedOrg = await Organization.findById(org._id).populate('members', 'name email image');
+
+    return NextResponse.json({ org: populatedOrg });
   } catch (error) {
     console.error('Org create error:', error);
     return NextResponse.json({ error: 'Failed to create organization' }, { status: 500 });
