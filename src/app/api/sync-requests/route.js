@@ -7,30 +7,67 @@ import ContactList from '@/lib/models/ContactList';
 import SyncRequest from '@/lib/models/SyncRequest';
 
 // Get sync requests for user
-export async function GET() {
+export async function GET(request) {
   try {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const { searchParams } = new URL(request.url);
+    const orgId = searchParams.get('orgId');
+
     await connectDB();
 
+    let incomingQuery = { 'targetUsers.userId': session.userId };
+    let sentQuery = { requestedBy: session.userId };
+
+    if (orgId) {
+      incomingQuery.$or = [
+        { orgId: orgId },
+        { orgId: { $exists: false } }
+      ];
+      sentQuery.$or = [
+        { orgId: orgId },
+        { orgId: { $exists: false } }
+      ];
+    }
+
     // Requests targeted at this user
-    const incomingRequests = await SyncRequest.find({
-      'targetUsers.userId': session.userId,
-    })
-      .populate('listId', 'title contacts')
+    const incomingRequests = await SyncRequest.find(incomingQuery)
+      .populate('listId', 'title contacts orgId')
       .populate('requestedBy', 'name email image')
       .sort({ createdAt: -1 });
 
     // Requests sent by this user
-    const sentRequests = await SyncRequest.find({
-      requestedBy: session.userId,
-    })
-      .populate('listId', 'title contacts')
+    const sentRequests = await SyncRequest.find(sentQuery)
+      .populate('listId', 'title contacts orgId')
       .populate('targetUsers.userId', 'name email image')
       .sort({ createdAt: -1 });
 
-    return NextResponse.json({ incoming: incomingRequests, sent: sentRequests });
+    // Lazy migration: fill missing orgId from listId
+    const migrateAndFilter = async (reqs) => {
+      const results = [];
+      for (const req of reqs) {
+        if (!req.orgId && req.listId?.orgId) {
+          req.orgId = req.listId.orgId;
+          await req.save();
+        }
+        
+        // Final check: if orgId filter is active, only show matches
+        if (orgId) {
+          if (req.orgId?.toString() === orgId) {
+            results.push(req);
+          }
+        } else {
+          results.push(req);
+        }
+      }
+      return results;
+    };
+
+    const finalIncoming = await migrateAndFilter(incomingRequests);
+    const finalSent = await migrateAndFilter(sentRequests);
+
+    return NextResponse.json({ incoming: finalIncoming, sent: finalSent });
   } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
@@ -90,6 +127,7 @@ export async function POST(request) {
       listId: contactList._id,
       requestedBy: session.userId,
       operation: operation || 'add',
+      orgId: org._id,
       targetUsers: targetUserIds.map(uid => ({
         userId: uid,
         status: 'pending',

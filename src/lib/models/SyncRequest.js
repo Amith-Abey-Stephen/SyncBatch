@@ -9,6 +9,7 @@ const SyncRequestSchema = new mongoose.Schema({
     syncedAt: { type: Date, default: null },
   }],
   operation: { type: String, enum: ['add', 'delete'], default: 'add' },
+  orgId: { type: mongoose.Schema.Types.ObjectId, ref: 'Organization', required: true },
 }, { timestamps: true });
 
 export default mongoose.models.SyncRequest || mongoose.model('SyncRequest', SyncRequestSchema);
