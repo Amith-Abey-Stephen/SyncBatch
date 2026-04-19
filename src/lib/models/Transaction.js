@@ -5,7 +5,7 @@ const TransactionSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   creditsAdded: { type: Number, required: true },
   planId: { type: String, default: '' },
-  paymentId: { type: String, required: true },
+  paymentId: { type: String, default: '' },
   orderId: { type: String, required: true },
   status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
 }, { timestamps: true });

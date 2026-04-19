@@ -43,12 +43,16 @@ export async function POST(request) {
     user.credits += transaction.creditsAdded;
     user.plan = 'paid';
 
-    // Update Max Contacts Limit based on plan
+    // Update Limits based on plan
     if (transaction.planId) {
       const plan = getPlanById(transaction.planId);
-      if (plan && plan.maxContacts) {
-        // Upgrade limit if new plan is higher than current
-        user.maxContactsLimit = Math.max(user.maxContactsLimit || 0, plan.maxContacts);
+      if (plan) {
+        if (plan.maxContacts) {
+          user.maxContactsLimit = Math.max(user.maxContactsLimit || 0, plan.maxContacts);
+        }
+        if (plan.maxOrgs) {
+          user.maxOrgsLimit = Math.max(user.maxOrgsLimit || 0, plan.maxOrgs);
+        }
       }
     }
 

@@ -18,14 +18,22 @@ export const PLANS = {
   ],
   institution: [
     { 
-      id: 'institution_50', name: 'Dept Starter', credits: 50, price: 499, currency: 'INR', 
+      id: 'institution_starter', name: 'Dept Starter', credits: 50, price: 499, currency: 'INR', 
       maxContacts: 2000,
-      benefits: ['2000 contacts/request', 'Organization Dashboard', 'Invite 10 Members', 'Shared Sync Requests']
+      maxOrgs: 1,
+      benefits: ['1 Organization Hub', '2000 contacts/request', 'Invite 50 Members', 'Shared Sync Requests']
     },
     { 
-      id: 'institution_200', name: 'Campus Elite', credits: 200, price: 1499, currency: 'INR', 
+      id: 'institution_multi', name: 'Campus Multi', credits: 200, price: 1499, currency: 'INR', 
       maxContacts: 10000,
-      benefits: ['10,000 contacts/request', 'Unlimited Members', 'Admin Control Panel', 'Bulk Sync Analytics']
+      maxOrgs: 5,
+      benefits: ['5 Organization Hubs', '10,000 contacts/request', 'Unlimited Members', 'Priority Admin Support']
+    },
+    { 
+      id: 'institution_unlimited', name: 'Enterprise Elite', credits: 1000, price: 4999, currency: 'INR', 
+      maxContacts: 50000,
+      maxOrgs: 9999, // Unlimited
+      benefits: ['Unlimited Org Hubs', '50,000 contacts/request', 'Global Analytics', 'Dedicated Manager']
     },
   ],
 };

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import toast from 'react-hot-toast';
-import { CreditCard, Check, Zap, Users, Shield, Star, ArrowRight, Building2, Smartphone, HelpCircle } from 'lucide-react';
+import { CreditCard, Check, Zap, Users, Shield, Star, ArrowRight, Building2, Smartphone, HelpCircle, RefreshCw } from 'lucide-react';
 import { PLANS } from '@/lib/plans';
 
 export default function CreditsPage() {
@@ -74,7 +74,8 @@ export default function CreditsPage() {
             const verifyData = await verifyRes.json();
             if (verifyRes.ok) {
               toast.success(`${verifyData.creditsAdded} credits added! Total: ${verifyData.credits}`);
-              refreshUser();
+              await refreshUser();
+              router.push('/dashboard');
             } else {
               toast.error('Payment verification failed');
             }
@@ -83,7 +84,7 @@ export default function CreditsPage() {
           }
         },
         prefill: { name: user?.name, email: user?.email },
-        theme: { color: '#2563eb' },
+        theme: { color: '#7c3aed' },
         modal: { ondismiss: () => { toast('Payment cancelled', { icon: '✕' }); } },
       };
       const rzp = new window.Razorpay(options);
@@ -114,14 +115,14 @@ export default function CreditsPage() {
                 <h2 className="text-xl font-black text-slate-900 tracking-tight">Which plan is right for you?</h2>
              </div>
              <div className="grid md:grid-cols-2 gap-10">
-                <div className="space-y-3">
-                   <h4 className="flex items-center gap-2 font-bold text-primary-600 text-xs uppercase tracking-widest"><Zap className="w-3.5 h-3.5" /> Personal Packs</h4>
-                   <p className="text-sm text-slate-500 leading-relaxed">Best for students or individuals who need to sync contact lists to their own phone. Quick, simple, and direct device connection.</p>
-                </div>
-                <div className="space-y-3">
-                   <h4 className="flex items-center gap-2 font-bold text-purple-600 text-xs uppercase tracking-widest"><Users className="w-3.5 h-3.5" /> Institution Packs</h4>
-                   <p className="text-sm text-slate-500 leading-relaxed">Best for teachers or coordinators. Push contacts to 50+ members at once via <strong>Sync Requests</strong>—no student needs the original file!</p>
-                </div>
+                 <div className="space-y-3">
+                    <h4 className="flex items-center gap-2 font-bold text-primary-600 text-xs uppercase tracking-widest"><Zap className="w-3.5 h-3.5" /> Personal Sync</h4>
+                    <p className="text-sm text-slate-500 leading-relaxed">Best for individual contact lists. Directly sync Excel data to your Google or iCloud account in seconds.</p>
+                 </div>
+                 <div className="space-y-3">
+                    <h4 className="flex items-center gap-2 font-bold text-purple-600 text-xs uppercase tracking-widest"><Building2 className="w-3.5 h-3.5" /> Institutional Hub</h4>
+                    <p className="text-sm text-slate-500 leading-relaxed">Best for organizations. Create <strong>multiple organization hubs</strong> (up to unlimited) and broadcast contacts to thousands of members simultaneously.</p>
+                 </div>
              </div>
           </div>
 
@@ -160,41 +161,91 @@ export default function CreditsPage() {
 
           <div className="border-t border-slate-100 pt-10 text-center mb-10 fade-in-up-delayed-2">
             <h2 className="text-3xl font-black font-heading text-slate-900 mb-2 uppercase tracking-tighter italic">
-              {tab === 'personal' ? 'Personal' : 'Instructional'} Pricing
+               {tab === 'personal' ? 'Personal' : 'Institutional'} Plans
             </h2>
           </div>
 
           {/* Section 3: Pricing Cards */}
           <div className={`grid gap-6 fade-in-up-delayed-3 ${currentPlans.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 max-w-3xl mx-auto'}`}>
-            {currentPlans.map((plan) => (
-              <div key={plan.id} className={`relative bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/50 hover:scale-[1.02] transition-transform`}>
-                <div className="text-center">
-                  <p className="text-xs font-bold text-primary-600 bg-primary-50 inline-block px-3 py-1 rounded-full mb-4 tracking-widest">{plan.name}</p>
-                  <div className="flex items-baseline justify-center gap-1 mb-1">
-                    <span className="text-4xl font-extrabold text-slate-900">₹{plan.price}</span>
+            {currentPlans.map((plan) => {
+               const isRecommended = plan.id === 'institution_multi' || plan.id === 'personal_10';
+               const isElite = plan.id === 'institution_unlimited';
+               const isEnterprise = plan.id === 'institution_unlimited';
+              
+              return (
+                <div 
+                  key={plan.id} 
+                  className={`relative rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] duration-300 ${
+                    isEnterprise 
+                      ? 'bg-slate-900 border-slate-800 text-white shadow-2xl shadow-primary-500/20' 
+                      : isRecommended 
+                        ? 'bg-white border-primary-500 shadow-2xl shadow-primary-600/10' 
+                        : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50'
+                  }`}
+                >
+                  {isRecommended && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-primary-600/40">
+                      Most Popular
+                    </div>
+                  )}
+
+                  <div className="text-center">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6 ${
+                      isEnterprise ? 'bg-primary-500/20 text-primary-400' : 'bg-indigo-50 text-primary-600'
+                    }`}>
+                      {plan.id.includes('unlimited') ? <Star className="w-8 h-8" /> : <Zap className="w-8 h-8" />}
+                    </div>
+
+                    <p className={`text-xs font-black uppercase tracking-widest mb-2 ${
+                      isEnterprise ? 'text-primary-400' : 'text-primary-600'
+                    }`}>{plan.name}</p>
+                    
+                    <div className="flex items-baseline justify-center gap-1 mb-1">
+                      <span className={`text-4xl font-black tracking-tight ${isEnterprise ? 'text-white' : 'text-slate-900'}`}>₹{plan.price}</span>
+                    </div>
+                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-8 ${isEnterprise ? 'text-slate-400' : 'text-slate-400'}`}>
+                      Synced Credits: {plan.credits}
+                    </p>
+
+                    <ul className={`space-y-4 text-left mb-8 border-t pt-8 ${isEnterprise ? 'border-slate-800' : 'border-slate-50'}`}>
+                      {plan.benefits.map((benefit) => (
+                        <li key={benefit} className="flex items-start gap-3 text-sm font-medium">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                            isEnterprise ? 'bg-primary-500/20 text-primary-400' : 'bg-emerald-100 text-emerald-600'
+                          }`}>
+                            <Check className="w-3 h-3 stroke-[4]" />
+                          </div>
+                          <span className={isEnterprise ? 'text-slate-300' : 'text-slate-600'}>{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                     <button
+                       onClick={() => handlePurchase(plan.id)}
+                       disabled={purchasing === plan.id}
+                       className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 ${
+                         isElite 
+                           ? 'bg-primary-600 text-white hover:bg-primary-500 shadow-primary-600/30' 
+                           : isRecommended
+                             ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-600/20'
+                             : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10'
+                       }`}
+                     >
+                       {purchasing === plan.id ? (
+                         <RefreshCw className="w-4 h-4 animate-spin" />
+                       ) : (
+                         <>
+                           <CreditCard className="w-4 h-4" />
+                           {tab === 'personal' ? 'Purchase Pack' : 'Upgrade Now'}
+                         </>
+                       )}
+                     </button>
                   </div>
-                  <p className="text-xs text-slate-400 mb-6 font-medium">Synced Credits: {plan.credits}</p>
-
-                  <ul className="space-y-3 text-left mb-8 border-t border-slate-50 pt-6">
-                    {plan.benefits.map((benefit) => (
-                      <li key={benefit} className="flex items-start gap-2 text-sm text-slate-600">
-                        <Check className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
-                        {benefit}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <button
-                    onClick={() => handlePurchase(plan.id)}
-                    disabled={purchasing === plan.id}
-                    className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-lg hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                  >
-                    {purchasing === plan.id ? <span className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full" /> : <><CreditCard className="w-4 h-4" /> Buy Now</>}
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+
         </div>
       </main>
       <Footer />
