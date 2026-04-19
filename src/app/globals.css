@@ -99,7 +99,7 @@
 
 /* Hero background pattern */
 .hero-pattern {
-  background-image: radial-gradient(circle at 1px 1px, rgba(37, 99, 235, 0.08) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, rgba(124, 58, 237, 0.08) 1px, transparent 0);
   background-size: 32px 32px;
 }
 

@@ -1,7 +1,7 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
-import { Upload, Smartphone, Shield, Zap, Users, CreditCard, CheckCircle, ArrowRight, FileSpreadsheet, RefreshCw } from 'lucide-react';
+import { Upload, Smartphone, Shield, Zap, Users, CreditCard, CheckCircle, ArrowRight, FileSpreadsheet, RefreshCw, Building2, Mail, Send } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/next"
 
 export default function Home() {
@@ -183,44 +183,185 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Pricing Preview */}
-        <section className="py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Detailed Pricing Hub */}
+        <section className="py-24 bg-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-50 rounded-full blur-[100px] opacity-50" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-50 rounded-full blur-[100px] opacity-50" />
+          
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                Simple, Fair Pricing
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-50 border border-primary-100 rounded-full text-primary-600 text-xs font-black uppercase tracking-widest mb-6">
+                <CreditCard className="w-3.5 h-3.5" />
+                Transparent Pricing
+              </div>
+              <h2 className="text-4xl sm:text-5xl font-black text-slate-900 mb-6 tracking-tight">
+                Plans for Everyone
               </h2>
-              <p className="text-slate-500 max-w-2xl mx-auto">
-                Your first sync is completely free. After that, buy affordable credit packs.
+              <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed font-medium">
+                Choose the model that fits your needs. Your first sync is always free.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {[
-                { name: 'Free', price: '₹0', syncs: '1 sync', desc: 'Try it out', highlight: false },
-                { name: 'Starter', price: '₹29', syncs: '3 syncs', desc: 'For personal use', highlight: true },
-                { name: 'Pro', price: '₹79', syncs: '10 syncs', desc: 'Best value', highlight: false },
-              ].map((plan, i) => (
-                <div key={i} className={`rounded-2xl p-8 text-center border transition-all ${
-                  plan.highlight
-                    ? 'bg-gradient-to-br from-primary-600 to-primary-700 text-white border-primary-700 shadow-2xl shadow-primary-600/25 scale-105'
-                    : 'bg-white border-slate-200 hover:border-primary-200 hover:shadow-lg'
-                }`}>
-                  <p className={`text-sm font-medium mb-2 ${plan.highlight ? 'text-primary-200' : 'text-slate-500'}`}>{plan.name}</p>
-                  <p className="text-4xl font-extrabold mb-1">{plan.price}</p>
-                  <p className={`text-sm mb-6 ${plan.highlight ? 'text-primary-200' : 'text-slate-400'}`}>{plan.syncs}</p>
-                  <Link
-                    href="/credits"
-                    className={`block py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
-                      plan.highlight
-                        ? 'bg-white text-primary-700 hover:bg-primary-50'
-                        : 'bg-primary-50 text-primary-700 hover:bg-primary-100'
-                    }`}
-                  >
-                    {plan.price === '₹0' ? 'Start Free' : 'Get Started'}
-                  </Link>
+            <div className="grid lg:grid-cols-2 gap-12">
+              {/* Personal Column */}
+              <div className="space-y-8 fade-in-up">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-14 h-14 bg-primary-100 rounded-[1.5rem] flex items-center justify-center shadow-inner">
+                    <Smartphone className="w-7 h-7 text-primary-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Personal Sync</h3>
+                    <p className="text-sm text-slate-500 font-medium">Direct device connection for individuals.</p>
+                  </div>
                 </div>
-              ))}
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {[
+                    { name: 'Intro Pack', price: '₹29', syncs: '3 Syncs', limit: '100 contacts/sync' },
+                    { name: 'Power Pack', price: '₹79', syncs: '10 Syncs', limit: '500 contacts/sync', recommended: true },
+                  ].map((plan, i) => (
+                    <div key={i} className={`p-6 rounded-[2rem] border-2 transition-all ${plan.recommended ? 'bg-primary-600 border-primary-600 text-white shadow-xl shadow-primary-600/20' : 'bg-slate-50 border-slate-100 text-slate-900'}`}>
+                      <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${plan.recommended ? 'text-primary-200' : 'text-slate-400'}`}>{plan.name}</p>
+                      <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-3xl font-black">{plan.price}</span>
+                      </div>
+                      <p className={`text-xs font-bold mb-4 ${plan.recommended ? 'text-primary-100' : 'text-primary-600'}`}>{plan.syncs}</p>
+                      <ul className="space-y-2 mb-6">
+                        <li className="flex items-center gap-2 text-[11px] font-bold">
+                          <CheckCircle className={`w-3.5 h-3.5 ${plan.recommended ? 'text-white' : 'text-emerald-500'}`} />
+                          {plan.limit}
+                        </li>
+                        <li className="flex items-center gap-2 text-[11px] font-bold">
+                          <CheckCircle className={`w-3.5 h-3.5 ${plan.recommended ? 'text-white' : 'text-emerald-500'}`} />
+                          Lifetime Validity
+                        </li>
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Institutional Column */}
+              <div className="space-y-8 fade-in-up-delayed">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-14 h-14 bg-purple-100 rounded-[1.5rem] flex items-center justify-center shadow-inner">
+                    <Building2 className="w-7 h-7 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 tracking-tight">Institutional Sync</h3>
+                    <p className="text-sm text-slate-500 font-medium">Team-wide hubs for departments & campus.</p>
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {[
+                    { name: 'Dept Starter', price: '₹499', orgs: '1 Organization', limit: '2,000 contacts' },
+                    { name: 'Enterprise', price: '₹4,999', orgs: 'Unlimited Hubs', limit: '50,000 contacts', enterprise: true },
+                  ].map((plan, i) => (
+                    <div key={i} className={`p-6 rounded-[2rem] border-2 transition-all ${plan.enterprise ? 'bg-slate-900 border-slate-900 text-white shadow-xl shadow-slate-900/20' : 'bg-slate-50 border-slate-100 text-slate-900'}`}>
+                      <p className={`text-[10px] font-black uppercase tracking-widest mb-3 ${plan.enterprise ? 'text-primary-400' : 'text-slate-400'}`}>{plan.name}</p>
+                      <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-3xl font-black">{plan.price}</span>
+                      </div>
+                      <p className={`text-xs font-bold mb-4 ${plan.enterprise ? 'text-primary-400' : 'text-purple-600'}`}>{plan.orgs}</p>
+                      <ul className="space-y-2 mb-6">
+                        <li className="flex items-center gap-2 text-[11px] font-bold">
+                          <CheckCircle className={`w-3.5 h-3.5 ${plan.enterprise ? 'text-primary-400' : 'text-emerald-500'}`} />
+                          {plan.limit}/request
+                        </li>
+                        <li className="flex items-center gap-2 text-[11px] font-bold">
+                          <CheckCircle className={`w-3.5 h-3.5 ${plan.enterprise ? 'text-primary-400' : 'text-emerald-500'}`} />
+                          Admin Command Center
+                        </li>
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-16 text-center">
+              <Link
+                href="/credits"
+                className="inline-flex items-center gap-3 px-10 py-5 bg-primary-600 text-white font-black rounded-[1.5rem] shadow-2xl shadow-primary-600/30 hover:bg-indigo-700 hover:scale-[1.02] transition-all text-sm uppercase tracking-widest"
+              >
+                View All Plans & Features
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <p className="mt-6 text-sm text-slate-400 font-bold tracking-tight">
+                Join 5,000+ users already using SyncBatch for their teams
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Us Section */}
+        <section id="contact" className="py-24 bg-slate-50 relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div className="fade-in-up">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-100 border border-primary-200 rounded-full text-primary-600 text-xs font-black uppercase tracking-widest mb-6">
+                  <Mail className="w-3.5 h-3.5" />
+                  Get In Touch
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-black text-slate-900 mb-6 tracking-tight">
+                  We&apos;re here to <br /><span className="text-primary-600">help you sync.</span>
+                </h2>
+                <p className="text-lg text-slate-500 leading-relaxed font-medium mb-10 max-w-lg">
+                  Have questions about our institutional plans or need technical support? Our team is ready to assist you.
+                </p>
+
+                <div className="space-y-6">
+                  {[
+                    { icon: Mail, title: 'Email Support', detail: 'support@syncbatch.com', desc: 'Response within 24 hours' },
+                    { icon: Shield, title: 'Security First', detail: 'Enterprise-grade encryption', desc: 'Your data is always private' }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100 shrink-0">
+                        <item.icon className="w-5 h-5 text-primary-600" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800">{item.title}</h4>
+                        <p className="text-sm text-slate-600">{item.detail}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="fade-in-up-delayed">
+                <div className="bg-white rounded-[2.5rem] p-8 sm:p-10 border border-slate-100 shadow-2xl shadow-slate-200/60 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                    <Send className="w-32 h-32 text-primary-600" />
+                  </div>
+                  
+                  <form className="space-y-5 relative z-10">
+                    <div className="grid sm:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
+                        <input type="text" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold" placeholder="John Doe" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                        <input type="email" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold" placeholder="john@example.com" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Subject</label>
+                      <input type="text" className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold" placeholder="How can we help?" />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Message</label>
+                      <textarea className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold resize-none" rows={4} placeholder="Your message here..." />
+                    </div>
+                    <button type="submit" className="w-full py-4 bg-primary-600 text-white font-black rounded-2xl shadow-xl shadow-primary-600/20 text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                      Send Message
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           </div>
         </section>
