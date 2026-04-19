@@ -36,7 +36,7 @@ export async function GET(request) {
         googleId: googleUser.id,
         googleAccessToken: tokens.access_token,
         googleRefreshToken: tokens.refresh_token || '',
-        credits: 0,
+        credits: 1, // Award 1 free credits
         freeUsed: false,
         plan: 'free',
       });
@@ -61,10 +61,15 @@ export async function GET(request) {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const sessionToken = await encrypt({ ...sessionData, expiresAt: expiresAt.toISOString() });
 
-    // Create redirect response
-    const response = NextResponse.redirect(new URL('/dashboard', request.url));
+    // Handle redirect
+    const cookieStore = await request.cookies;
+    const redirectPath = cookieStore.get('auth_redirect')?.value || '/dashboard';
+    const response = NextResponse.redirect(new URL(redirectPath, request.url));
     
-    // Set cookie on response manually to ensure it persists through the redirect
+    // Clear the redirect cookie
+    response.cookies.delete('auth_redirect');
+    
+    // Set session cookie
     response.cookies.set('session', sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

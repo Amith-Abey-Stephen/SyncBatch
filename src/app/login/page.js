@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@/context/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { Zap, Shield, Chrome } from 'lucide-react';
 import Navbar from '@/components/Navbar';
@@ -9,12 +9,14 @@ import Navbar from '@/components/Navbar';
 export default function LoginPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   useEffect(() => {
     if (user && !loading) {
-      router.push('/dashboard');
+      router.push(redirect || '/dashboard');
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, redirect]);
 
   return (
     <>
@@ -34,7 +36,7 @@ export default function LoginPage() {
 
           <div className="glass-card rounded-2xl p-8">
             <a
-              href="/api/auth/login"
+              href={`/api/auth/login${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
               className="flex items-center justify-center gap-3 w-full py-3.5 bg-white border-2 border-slate-200 rounded-xl text-slate-700 font-semibold text-sm hover:border-primary-300 hover:shadow-lg hover:shadow-primary-600/5 transition-all group"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">

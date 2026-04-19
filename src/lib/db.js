@@ -27,8 +27,11 @@ async function connectDB() {
   }
 
   try {
+    console.log('Connecting to MongoDB...');
     cached.conn = await cached.promise;
+    console.log('Connected to MongoDB successfully');
   } catch (e) {
+    console.error('MongoDB connection error:', e);
     cached.promise = null;
     throw e;
   }

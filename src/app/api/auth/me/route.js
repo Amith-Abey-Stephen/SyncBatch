@@ -19,6 +19,7 @@ export async function GET() {
 
     return NextResponse.json({ user });
   } catch (error) {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    console.error('Error in /api/auth/me:', error);
+    return NextResponse.json({ error: 'Server error', details: error.message }, { status: 500 });
   }
 }

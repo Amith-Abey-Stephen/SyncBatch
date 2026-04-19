@@ -15,18 +15,27 @@ export async function GET() {
     
     const user = await User.findById(session.userId);
     
-    // Find org where user is owner or member
-    const org = await Organization.findOne({
+    let org = await Organization.findOne({
       $or: [
         { ownerId: session.userId },
         { members: session.userId }
       ]
     }).populate('members', 'name email image');
     
-    const ownedOrg = await Organization.findOne({ ownerId: session.userId })
-      .populate('members', 'name email image');
+    // Lazy migration: add slug if missing
+    if (org && !org.slug) {
+      const slugify = (text) => text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+      let baseSlug = slugify(org.name);
+      let slug = baseSlug;
+      let counter = 1;
+      while (await Organization.findOne({ slug, _id: { $ne: org._id } })) {
+        slug = `${baseSlug}-${counter++}`;
+      }
+      org.slug = slug;
+      await org.save();
+    }
 
-    return NextResponse.json({ org: ownedOrg || org });
+    return NextResponse.json({ org });
   } catch (error) {
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
@@ -55,17 +64,27 @@ export async function POST(request) {
       }, { status: 403 });
     }
 
+    const slugify = (text) => text.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_-]+/g, '-').replace(/^-+|-+$/g, '');
+
     // Check if user already owns an org
     const existing = await Organization.findOne({ ownerId: session.userId });
     if (existing) {
       return NextResponse.json({ error: 'You already own an organization' }, { status: 400 });
     }
 
-    const inviteToken = crypto.randomBytes(32).toString('hex');
+    let slug = slugify(name);
+    // Ensure slug is unique
+    const slugExists = await Organization.findOne({ slug });
+    if (slugExists) {
+      slug = `${slug}-${crypto.randomBytes(3).toString('hex')}`;
+    }
+
+    const inviteToken = crypto.randomBytes(8).toString('hex'); // 16 chars instead of 64
     const inviteExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
     const org = await Organization.create({
       name,
+      slug,
       description: description || '',
       ownerId: session.userId,
       members: [session.userId],

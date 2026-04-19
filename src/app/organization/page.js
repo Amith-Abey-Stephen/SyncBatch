@@ -91,9 +91,24 @@ export default function OrganizationPage() {
 
   const copyInviteLink = () => {
     if (!org) return;
-    const link = `${window.location.origin}/join/${org._id}?token=${org.inviteToken}`;
+    const identifier = org.slug || org._id;
+    const link = `${window.location.origin}/join/${identifier}?token=${org.inviteToken}`;
     navigator.clipboard.writeText(link);
     toast.success('Invite link copied!');
+  };
+
+  const handleResetToken = async () => {
+    if (!confirm('This will invalidate the current invite link. Continue?')) return;
+    try {
+      const res = await fetch('/api/org/reset-token', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setOrg({ ...org, inviteToken: data.inviteToken });
+        toast.success('Invite link reset!');
+      }
+    } catch (e) {
+      toast.error('Failed to reset link');
+    }
   };
 
   const handleRequestAction = async (requestId, action) => {
@@ -155,13 +170,22 @@ export default function OrganizationPage() {
                       </span>
                     </div>
                   </div>
-                  <button
-                    onClick={copyInviteLink}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 text-primary-700 rounded-xl text-sm font-semibold hover:bg-primary-100 transition-all"
-                  >
-                    <Copy className="w-4 h-4" />
-                    Copy Invite Link
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={copyInviteLink}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-primary-50 text-primary-700 rounded-xl text-sm font-semibold hover:bg-primary-100 transition-all"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copy Invite Link
+                    </button>
+                    <button
+                      onClick={handleResetToken}
+                      title="Reset Invite Link"
+                      className="p-2.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Members */}

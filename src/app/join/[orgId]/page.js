@@ -12,19 +12,38 @@ export default function JoinOrgPage({ params }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const resolvedParams = use(params);
-  const orgId = resolvedParams.orgId;
+  const identifier = resolvedParams.orgId; // Param name is still orgId from folder
   const token = searchParams.get('token');
 
   const [joining, setJoining] = useState(false);
   const [status, setStatus] = useState('idle'); // idle, success, error
   const [message, setMessage] = useState('');
+  const [orgInfo, setOrgInfo] = useState(null);
+  const [fetchingOrg, setFetchingOrg] = useState(true);
+
+  useEffect(() => {
+    async function fetchOrgInfo() {
+      try {
+        const res = await fetch(`/api/org/public/${identifier}`);
+        if (res.ok) {
+          const data = await res.json();
+          setOrgInfo(data);
+        }
+      } catch (e) {
+        console.error('Failed to fetch org info', e);
+      } finally {
+        setFetchingOrg(false);
+      }
+    }
+    fetchOrgInfo();
+  }, [identifier]);
 
   useEffect(() => {
     if (!loading && !user) {
       // Redirect to login, then back here
-      router.push(`/login?redirect=/join/${orgId}?token=${token}`);
+      router.push(`/login?redirect=/join/${identifier}?token=${token}`);
     }
-  }, [user, loading, router, orgId, token]);
+  }, [user, loading, router, identifier, token]);
 
   const handleJoin = async () => {
     setJoining(true);
@@ -37,7 +56,7 @@ export default function JoinOrgPage({ params }) {
       const data = await res.json();
       if (res.ok) {
         setStatus('success');
-        setMessage(data.message || 'You have joined the organization!');
+        setMessage(data.message || `You have joined ${orgInfo?.name || 'the organization'}!`);
         toast.success('Joined organization!');
         setTimeout(() => router.push('/organization'), 2000);
       } else {
@@ -53,7 +72,14 @@ export default function JoinOrgPage({ params }) {
     }
   };
 
-  if (loading || !user) return null;
+  if (loading || !user || fetchingOrg) return (
+    <>
+      <Navbar />
+      <main className="min-h-screen flex items-center justify-center pt-16">
+        <RefreshCw className="w-8 h-8 text-primary-600 animate-spin" />
+      </main>
+    </>
+  );
 
   return (
     <>
@@ -66,9 +92,9 @@ export default function JoinOrgPage({ params }) {
                 <div className="w-16 h-16 bg-primary-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
                   <Building2 className="w-8 h-8 text-primary-600" />
                 </div>
-                <h2 className="text-xl font-bold text-slate-800 mb-2">Join Organization</h2>
+                <h2 className="text-xl font-bold text-slate-800 mb-2">Join {orgInfo?.name || 'Organization'}</h2>
                 <p className="text-sm text-slate-500 mb-6">
-                  You&apos;ve been invited to join an organization on SyncBatch.
+                  {orgInfo?.description || `You've been invited to join ${orgInfo?.name || 'an organization'} on SyncBatch.`}
                 </p>
                 <button
                   onClick={handleJoin}
@@ -79,7 +105,7 @@ export default function JoinOrgPage({ params }) {
                 </button>
               </>
             )}
-
+            {/* ... success and error states remain similar but with orgInfo usage if needed ... */}
             {status === 'success' && (
               <>
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">

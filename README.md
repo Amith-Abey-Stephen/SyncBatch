@@ -14,8 +14,9 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 *   **iPhone Support**: Dynamic generation of `.vcf` (vCard) files mapping directly to Apple's native importing.
 *   **Smart Deduplication**: Checks existing Google Contacts to actively prevent duplicates before making API calls.
 *   **Credit/Payment System**: Razorpay integration with 'Pay Per Sync' models spanning Personal and Institutional limits.
-*   **Organization Mode**: Allows institutions to create teams, onboard members via secure invite links, and assign remote "sync requests".
+*   **Organization Mode**: Allows institutions to create teams, onboard members via secure **slug-based invite links**, and assign remote "sync requests".
 *   **Admin Dashboard**: High-density statistics tracking revenue, user registrations, and platform health.
+*   **Session Management**: Automatic logout after 30 minutes of inactivity (synced across all browser tabs).
 *   **Subscription Gating**: Intelligent UI guards that restrict advanced organization features to Institutional and Admin tiers.
 *   **Legal Compliance**: Built-in [Privacy Policy](file:///d:/Drive%20D/phone/syncbatch/src/app/privacy/page.js) and [Terms of Service](file:///d:/Drive%20D/phone/syncbatch/src/app/terms/page.js) pages for platform transparency.
 *   **Security First**: Hardened against XSS, CSRF, and DoS (Upload limits & Security Headers).
@@ -85,6 +86,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 RAZORPAY_KEY_ID=your_id
 RAZORPAY_KEY_SECRET=your_secret
 NEXT_PUBLIC_RAZORPAY_KEY_ID=your_id
+NEXT_PUBLIC_SESSION_TIMEOUT=1800
 ```
 
 ### 3. Run Locally

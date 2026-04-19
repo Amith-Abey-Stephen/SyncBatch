@@ -1,6 +1,7 @@
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
+import SessionTimeout from '@/components/SessionTimeout';
 
 export const metadata = {
   title: 'SyncBatch – Sync Contacts from Excel to Phone Instantly',
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="min-h-screen bg-surface antialiased">
         <AuthProvider>
+          <SessionTimeout />
           <Toaster 
             position="top-right"
             toastOptions={{
@@ -45,6 +47,9 @@ export default function RootLayout({ children }) {
           />
           {children}
         </AuthProvider>
+
+        {/* Cloudflare Web Analytics */}
+        <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "ff45694b3a91466e85cab88f136f6509"}'></script>
       </body>
     </html>
   );
