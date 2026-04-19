@@ -7,18 +7,22 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState(0);
 
   const fetchUser = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch('/api/auth/me', { cache: 'no-store' });
       const data = await res.json();
       if (data.user) {
         setUser(data.user);
+        setNotifications(data.notifications || 0);
       } else {
         setUser(null);
+        setNotifications(0);
       }
     } catch (error) {
       setUser(null);
+      setNotifications(0);
     } finally {
       setLoading(false);
     }
@@ -31,13 +35,14 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
+    setNotifications(0);
     window.location.href = '/';
   };
 
   const refreshUser = () => fetchUser();
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, logout, refreshUser, notifications }}>
       {children}
     </AuthContext.Provider>
   );

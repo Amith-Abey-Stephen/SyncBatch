@@ -47,6 +47,12 @@ export async function GET(request) {
       }
       user.name = googleUser.name;
       user.image = googleUser.picture;
+      
+      // If user logs back in, cancel any scheduled deletion
+      if (user.deletionScheduledAt) {
+        user.deletionScheduledAt = null;
+      }
+      
       await user.save();
     }
 
