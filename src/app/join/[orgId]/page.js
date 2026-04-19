@@ -7,7 +7,9 @@ import Navbar from '@/components/Navbar';
 import toast from 'react-hot-toast';
 import { Building2, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 
-export default function JoinOrgPage({ params }) {
+import { Suspense } from 'react';
+
+function JoinOrgContent({ params }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -135,5 +137,17 @@ export default function JoinOrgPage({ params }) {
         </div>
       </main>
     </>
+  );
+}
+
+export default function JoinOrgPage({ params }) {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center bg-surface pt-16">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+      </main>
+    }>
+      <JoinOrgContent params={params} />
+    </Suspense>
   );
 }
