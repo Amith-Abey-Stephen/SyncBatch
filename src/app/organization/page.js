@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 import {
   Building2, Users, Link2, Copy, Plus, Send, CheckCircle, Clock,
   XCircle, Upload, FileSpreadsheet, Zap, ArrowRight, X, RefreshCw,
-  MoreVertical, ShieldCheck, Mail, ExternalLink, Activity, LogOut, Crown, Trash2, AlertTriangle, User, Eye
+  MoreVertical, ShieldCheck, Mail, ExternalLink, Activity, LogOut, Crown, Trash2, AlertTriangle, User, Eye, Shield
 } from 'lucide-react';
 
 export default function OrganizationPage() {
