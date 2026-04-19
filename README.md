@@ -1,8 +1,8 @@
 # ⚡ SyncBatch
 
-**A minimal, high-performance SaaS platform to sync contacts from Excel to mobile devices (iOS & Android).**
+**A premium, high-performance SaaS platform to sync contacts from Excel to mobile devices (iOS & Android).**
 
-SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync them directly to their Google Contacts or download them as a `.vcf` file for iPhone. Designed with built-in organization modes, a robust credit-based payment model, and an advanced admin control center.
+SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync them directly to their Google Contacts or download them as a `.vcf` file for iPhone. Designed with built-in multi-organization support, a robust credit-based payment model, and an advanced admin control center.
 
 ---
 
@@ -12,14 +12,13 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 *   **Direct Google Sync**: Leverages the Google People API to batch-insert contacts straight into your account.
 *   **Bulk Management**: Advanced "Bulk Delete" mode to remove uploaded contact batches from your Google account in seconds.
 *   **iPhone Support**: Dynamic generation of `.vcf` (vCard) files mapping directly to Apple's native importing.
-*   **Smart Deduplication**: Checks existing Google Contacts to actively prevent duplicates before making API calls.
+*   **Multi-Organization Hubs**: Create multiple synchronization hubs for different departments or teams with strict **Data Isolation**.
+*   **Team Control Center**: Advanced management for owners, including **Ownership Transfer**, **Member Removal**, and **Organization Deletion**.
+*   **Real-Time Sync Feedback**: Members receive live progress updates during broadcasts with a dedicated "Secure Sync" UI.
 *   **Credit/Payment System**: Razorpay integration with 'Pay Per Sync' models spanning Personal and Institutional limits.
-*   **Organization Mode**: Allows institutions to create teams, onboard members via secure **slug-based invite links**, and assign remote "sync requests".
+*   **Smart Deduplication**: Checks existing Google Contacts to actively prevent duplicates before making API calls.
 *   **Admin Dashboard**: High-density statistics tracking revenue, user registrations, and platform health.
-*   **Session Management**: Automatic logout after 30 minutes of inactivity (synced across all browser tabs).
-*   **Subscription Gating**: Intelligent UI guards that restrict advanced organization features to Institutional and Admin tiers.
-*   **Legal Compliance**: Built-in [Privacy Policy](file:///d:/Drive%20D/phone/syncbatch/src/app/privacy/page.js) and [Terms of Service](file:///d:/Drive%20D/phone/syncbatch/src/app/terms/page.js) pages for platform transparency.
-*   **Security First**: Hardened against XSS, CSRF, and DoS (Upload limits & Security Headers).
+*   **Aesthetic UX**: A modern, vibrant #2563EB Blue interface with glassmorphism effects and micro-animations.
 
 ---
 
@@ -36,11 +35,11 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 *   **Step 6: Results**: Get a report of successfully processed contacts.
 
 ### 2. Institutional Flow (For Organizations)
-*   **Step 1: Formation**: Create an Organization (Requires Institution Pack).
-*   **Step 2: Team Building**: Generate unique invite links and send them to members.
-*   **Step 3: Request Creation**: Upload a contact list and create a "Sync Request" targeting specific members.
-*   **Step 4: Member Action**: Members receive a notification on their dashboard and can "Accept" the request to instantly sync those contacts to their phone without having the original file.
-*   **Step 5: Monitoring**: Org owners can track which members have completed the sync.
+*   **Step 1: Formation**: Create one or more Organizations (Requires Institution Pack).
+*   **Step 2: Team Building**: Generate unique invite links and onboard members.
+*   **Step 3: Request Creation**: Upload a contact list and create a "Sync Request" (Add or Delete) targeting specific members.
+*   **Step 4: Member Action**: Members receive a real-time notification. They can **Preview Contacts** and click **Sync Now** to start a secure, animated synchronization process.
+*   **Step 5: Monitoring**: Org owners can track which members have completed the sync and manage team access in real-time.
 
 ---
 
@@ -54,8 +53,8 @@ SyncBatch uses a credit-based system. **1 Sync = 1 Credit**.
 - **Pro Pack (₹149)**: 25 syncs, 1,000 contacts/sync limit.
 
 ### Institution Packs (Multi-User Collaboration)
-- **Dept Starter (₹499)**: 50 requests, 2,000 contacts/sync limit.
-- **Campus Elite (₹1,499)**: 200 requests, 10,000 contacts/sync limit, Admin control panel access.
+- **Dept Starter (₹499)**: 50 requests, 2,000 contacts/sync limit, 1 Organization Hub.
+- **Campus Elite (₹1,499)**: 200 requests, 10,000 contacts/sync limit, 3 Organization Hubs, Admin control panel access.
 
 ---
 
