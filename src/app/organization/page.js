@@ -29,6 +29,8 @@ export default function OrganizationPage() {
   const [syncRequests, setSyncRequests] = useState({ incoming: [], sent: [] });
   const [reqTab, setReqTab] = useState('incoming');
   const [previewRequest, setPreviewRequest] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
 
   // Modals
   const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => {} });
@@ -51,9 +53,10 @@ export default function OrganizationPage() {
     }
   }, []);
 
-  const fetchRequests = useCallback(async () => {
+  const fetchRequests = useCallback(async (orgId) => {
     try {
-      const res = await fetch('/api/sync-requests');
+      const url = orgId ? `/api/sync-requests?orgId=${orgId}` : '/api/sync-requests';
+      const res = await fetch(url);
       const data = await res.json();
       setSyncRequests(data);
     } catch (e) {
@@ -64,13 +67,19 @@ export default function OrganizationPage() {
   useEffect(() => {
     if (user) {
       fetchOrg();
-      fetchRequests();
+    }
+  }, [user, fetchOrg]);
+
+  useEffect(() => {
+    if (user && orgs.length > 0) {
+      const activeOrg = orgs[activeOrgIdx];
+      fetchRequests(activeOrg?._id);
 
       // Poll for new requests every 10 seconds
-      const interval = setInterval(fetchRequests, 10000);
+      const interval = setInterval(() => fetchRequests(activeOrg?._id), 10000);
       return () => clearInterval(interval);
     }
-  }, [user, fetchOrg, fetchRequests]);
+  }, [user, orgs, activeOrgIdx, fetchRequests]);
 
   const handleCreateOrg = async (e) => {
     e.preventDefault();
@@ -249,7 +258,24 @@ export default function OrganizationPage() {
     });
   };
 
+  const handleRejectRequest = (requestId) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'warning',
+      title: 'Reject Sync Request?',
+      message: 'Are you sure you want to reject this request? You won\'t be able to sync this list unless it is sent again.',
+      confirmText: 'Yes, Reject',
+      onConfirm: () => handleRequestAction(requestId, 'ignore')
+    });
+  };
+
   const handleRequestAction = async (requestId, action) => {
+    const req = syncRequests.incoming.find(r => r._id === requestId);
+    if (action === 'sync') {
+      setIsSyncing(true);
+      setSyncMessage(req?.operation === 'delete' ? 'Removing contacts from your device...' : 'Syncing team contacts to your device...');
+    }
+
     try {
       const res = await fetch(`/api/sync-requests/${requestId}`, {
         method: 'POST',
@@ -257,12 +283,19 @@ export default function OrganizationPage() {
         body: JSON.stringify({ action }),
       });
       if (res.ok) {
-        toast.success(action === 'sync' ? 'Sync started!' : 'Request ignored');
-        fetchRequests();
+        toast.success(action === 'sync' ? (req?.operation === 'delete' ? 'Contacts removed!' : 'Sync complete!') : 'Request ignored');
+        const activeOrg = orgs[activeOrgIdx];
+        fetchRequests(activeOrg?._id);
         refreshUser();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Action failed');
       }
     } catch (e) {
       toast.error('Action failed');
+    } finally {
+      setIsSyncing(false);
+      setSyncMessage('');
     }
   };
 
@@ -318,14 +351,17 @@ export default function OrganizationPage() {
                     
                     return (
                       <button
-                        onClick={() => canCreate ? setShowCreateForm(true) : toast.error(`Plan Limit: You can own up to ${user.maxOrgsLimit} organizations.`)}
-                        className={`px-6 py-3 rounded-2xl text-sm font-black transition-all shrink-0 border-2 flex items-center gap-2 ${
-                          canCreate 
-                            ? 'border-dashed border-slate-200 text-slate-400 hover:border-primary-400 hover:text-primary-600' 
-                            : 'bg-slate-50 border-slate-100 text-slate-300 cursor-not-allowed opacity-60'
-                        }`}
+                        onClick={() => {
+                          if (canCreate) {
+                            setShowCreateForm(true);
+                          } else {
+                            toast.error(`Plan Limit: You can own up to ${user.maxOrgsLimit} organizations. Redirecting to upgrade...`);
+                            setTimeout(() => router.push('/credits?tab=org'), 1500);
+                          }
+                        }}
+                        className="px-6 py-3 rounded-2xl text-sm font-black transition-all shrink-0 border-2 border-dashed border-slate-200 text-slate-400 hover:border-primary-400 hover:text-primary-600 flex items-center gap-2 group"
                       >
-                        {canCreate ? <Plus className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
+                        <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
                         Create New {user.maxOrgsLimit > 0 && `(${ownedOrgs}/${user.maxOrgsLimit})`}
                       </button>
                     );
@@ -544,58 +580,89 @@ export default function OrganizationPage() {
                         syncRequests.incoming.map((req) => {
                           const myTarget = req.targetUsers?.find(t => t.userId?.toString() === user._id || t.userId?._id === user._id);
                           return (
-                            <div key={req._id} className="bg-slate-50 rounded-[1.5rem] p-5 sm:p-6 border border-slate-100 hover:border-primary-200 hover:bg-white transition-all group/card">
-                              <div className="flex flex-col gap-6">
-                                <div className="flex items-start gap-4">
-                                  <div className={`w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm ${req.operation === 'delete' ? 'text-red-500' : 'text-primary-600'} shrink-0`}>
-                                    {req.operation === 'delete' ? <Trash2 className="w-6 h-6" /> : <FileSpreadsheet className="w-6 h-6" />}
+                            <div key={req._id} className={`relative overflow-hidden rounded-[2rem] p-6 sm:p-8 border-2 transition-all group/card ${
+                              req.operation === 'delete' 
+                                ? 'bg-red-50/30 border-red-100 hover:border-red-300' 
+                                : 'bg-white border-slate-100 hover:border-primary-300 shadow-xl shadow-slate-200/40'
+                            }`}>
+                              {/* Operation Type Background Icon */}
+                              <div className="absolute -top-4 -right-4 opacity-[0.03] group-hover/card:scale-110 transition-transform duration-700 pointer-events-none">
+                                {req.operation === 'delete' ? <Trash2 className="w-32 h-32 text-red-600" /> : <Zap className="w-32 h-32 text-primary-600" />}
+                              </div>
+
+                              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                <div className="flex items-start gap-5">
+                                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm shrink-0 ${
+                                    req.operation === 'delete' ? 'bg-red-100 text-red-600' : 'bg-primary-50 text-primary-600'
+                                  }`}>
+                                    {req.operation === 'delete' ? <Trash2 className="w-7 h-7" /> : <FileSpreadsheet className="w-7 h-7" />}
                                   </div>
                                   <div className="min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <p className="font-bold text-slate-800 break-words leading-tight">{req.listId?.title || 'Contact List'}</p>
+                                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                                      <h3 className="text-lg font-black text-slate-800 tracking-tight truncate max-w-[200px] sm:max-w-md">
+                                        {req.listId?.title || 'Contact List'}
+                                      </h3>
                                       {req.operation === 'delete' ? (
-                                        <span className="bg-red-50 text-red-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-red-100">Removing Contacts</span>
+                                        <span className="bg-red-600 text-white text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-red-600/20">Removing Contacts</span>
                                       ) : (
-                                        <span className="bg-primary-50 text-primary-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest border border-primary-100">Adding Contacts</span>
+                                        <span className="bg-primary-600 text-white text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-primary-600/20">Adding Contacts</span>
                                       )}
                                     </div>
-                                    <p className="text-[11px] sm:text-xs text-slate-400 font-medium flex items-center gap-1.5 mt-1">
-                                      <User className="w-3 h-3" />
-                                      Sent by {req.requestedBy?.name} • {req.listId?.contacts?.length || 0} contacts
-                                      <button 
-                                        onClick={() => setPreviewRequest(req)}
-                                        className="ml-2 text-primary-600 hover:underline flex items-center gap-1"
-                                      >
-                                        <Eye className="w-3 h-3" />
-                                        View Contacts
-                                      </button>
-                                    </p>
+                                    <div className="text-[11px] sm:text-xs text-slate-500 font-medium flex items-center gap-2">
+                                      <div className="flex -space-x-2">
+                                        <div className="w-5 h-5 bg-slate-200 rounded-full border-2 border-white flex items-center justify-center text-[8px]">
+                                          {req.requestedBy?.name?.[0]}
+                                        </div>
+                                      </div>
+                                      Sent by <span className="text-slate-800 font-bold">{req.requestedBy?.name}</span> • <span className="text-primary-600 font-bold">{req.listId?.contacts?.length || 0} contacts</span>
+                                    </div>
+                                    <button 
+                                      onClick={() => setPreviewRequest(req)}
+                                      className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary-600 transition-colors"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" />
+                                      Preview Contacts
+                                    </button>
                                   </div>
                                 </div>
                                 
-                                <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 border-t border-slate-100 pt-4 sm:border-0 sm:pt-0 sm:justify-end">
+                                <div className="flex items-center gap-3 self-end md:self-center">
                                   {myTarget?.status === 'pending' ? (
                                     <>
                                       <button
                                         onClick={() => handleRequestAction(req._id, 'sync')}
-                                        className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 ${req.operation === 'delete' ? 'bg-red-600 shadow-red-600/20 hover:bg-red-700' : 'bg-primary-600 shadow-primary-600/20 hover:bg-primary-700'} text-white rounded-xl text-sm font-bold transition-all shadow-lg active:scale-95`}
+                                        className={`px-7 py-3.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-lg ${
+                                          req.operation === 'delete' 
+                                            ? 'bg-red-600 text-white shadow-red-600/20 hover:bg-red-700' 
+                                            : 'bg-primary-600 text-white shadow-primary-600/20 hover:bg-primary-700'
+                                        }`}
                                       >
-                                        {req.operation === 'delete' ? <Trash2 className="w-3.5 h-3.5" /> : <Zap className="w-3.5 h-3.5" />}
                                         {req.operation === 'delete' ? 'Delete Now' : 'Sync Now'}
                                       </button>
                                       <button
-                                        onClick={() => handleRequestAction(req._id, 'ignore')}
-                                        className="px-5 py-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl text-sm font-bold transition-all"
+                                        onClick={() => handleRejectRequest(req._id)}
+                                        className="px-6 py-3.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl text-xs font-black uppercase tracking-widest transition-all"
                                       >
-                                        Ignore
+                                        Reject
                                       </button>
                                     </>
                                   ) : (
-                                    <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider w-full sm:w-auto justify-center ${
-                                      myTarget?.status === 'done' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                                    <div className={`flex items-center gap-2 px-5 py-3 rounded-2xl border-2 font-black text-[10px] uppercase tracking-widest ${
+                                      myTarget?.status === 'done' 
+                                        ? (req.operation === 'delete' ? 'bg-red-50 border-red-100 text-red-600' : 'bg-green-50 border-green-100 text-green-600')
+                                        : 'bg-slate-50 border-slate-100 text-slate-400'
                                     }`}>
-                                      {myTarget?.status === 'done' ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-                                      {myTarget?.status === 'done' ? 'Successfully Synced' : 'Request Ignored'}
+                                      {myTarget?.status === 'done' ? (
+                                        <>
+                                          <CheckCircle className="w-4 h-4" />
+                                          {req.operation === 'delete' ? 'Successfully Removed' : 'Successfully Synced'}
+                                        </>
+                                      ) : (
+                                        <>
+                                          <XCircle className="w-4 h-4" />
+                                          Request Ignored
+                                        </>
+                                      )}
                                     </div>
                                   )}
                                 </div>
@@ -710,7 +777,7 @@ export default function OrganizationPage() {
                       Organization features like member invites and bulk sync broadcasts are only available on <strong>Institutional Plans</strong>.
                    </p>
                    <button
-                     onClick={() => router.push('/credits')}
+                     onClick={() => router.push('/credits?tab=org')}
                      className="inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-bold rounded-2xl shadow-lg hover:shadow-primary-500/20 transition-all text-sm"
                    >
                      Upgrade to Institution Plan
@@ -802,6 +869,25 @@ export default function OrganizationPage() {
           )}
         </div>
       </main>
+
+      {/* Syncing Modal */}
+      {isSyncing && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-2xl max-w-sm w-full text-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <RefreshCw className="w-10 h-10 text-primary-600 animate-spin" />
+            </div>
+            <h3 className="text-xl font-black text-slate-800 mb-2 tracking-tight">Processing...</h3>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed mb-6">
+              {syncMessage}
+            </p>
+            <div className="flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 py-3 rounded-2xl border border-slate-100">
+              <Shield className="w-3.5 h-3.5 text-primary-600" />
+              Secure Sync in Progress
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Preview Modal */}
       {previewRequest && (

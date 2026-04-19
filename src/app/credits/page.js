@@ -19,6 +19,13 @@ export default function CreditsPage() {
     if (!loading && !user) {
       router.push('/login');
     }
+    
+    // Support direct tab linking (e.g. /credits?tab=org)
+    const params = new URLSearchParams(window.location.search);
+    const urlTab = params.get('tab');
+    if (urlTab === 'org') {
+      setTab('org');
+    }
   }, [user, loading, router]);
 
   const loadRazorpay = () => {

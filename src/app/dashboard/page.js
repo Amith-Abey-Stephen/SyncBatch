@@ -659,11 +659,11 @@ export default function DashboardPage() {
                   )}
                 </div>
 
-                {orgs.length > 0 && (
+                {orgs.length > 0 ? (
                   <div
                     onClick={() => setSyncMethod('org')}
                     className={`bg-white rounded-[2rem] p-8 border-2 text-left transition-all col-span-full cursor-pointer ${
-                      syncMethod === 'org' ? 'border-primary-500 shadow-2xl shadow-primary-600/10 ring-4 ring-indigo-50' : 'border-slate-100 hover:border-primary-200'
+                      syncMethod === 'org' ? 'border-primary-500 shadow-2xl shadow-primary-600/10 ring-4 ring-primary-50' : 'border-slate-100 hover:border-primary-200'
                     }`}
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
@@ -830,6 +830,34 @@ export default function DashboardPage() {
                       </div>
                     )}
                   </div>
+                ) : (
+                  <div
+                    onClick={() => router.push('/credits?tab=org')}
+                    className="bg-slate-50 rounded-[2rem] p-8 border-2 border-slate-100 text-left transition-all col-span-full cursor-pointer hover:border-primary-200 group relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                      <Building2 className="w-64 h-64 text-slate-900" />
+                    </div>
+                    
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm">
+                          <Building2 className="w-7 h-7 text-slate-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                            Institution Mode
+                            <Shield className="w-4 h-4 text-amber-500" />
+                          </h3>
+                          <p className="text-sm text-slate-500 font-medium">Broadcast contacts to your entire team instantly.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-900/20 group-hover:bg-primary-600 transition-colors">
+                        Upgrade to Unlock
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -951,9 +979,11 @@ export default function DashboardPage() {
               {/* Summary */}
               <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm text-center">
                 <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-                  operation === 'add' ? 'bg-green-100' : 'bg-red-100'
+                  syncResults.isBroadcast ? 'bg-primary-50' : (operation === 'add' ? 'bg-green-100' : 'bg-red-100')
                 }`}>
-                  {operation === 'add' ? (
+                  {syncResults.isBroadcast ? (
+                    <Send className="w-8 h-8 text-primary-600" />
+                  ) : operation === 'add' ? (
                     <CheckCircle className="w-8 h-8 text-green-600" />
                   ) : (
                     <Trash2 className="w-8 h-8 text-danger" />
@@ -963,13 +993,17 @@ export default function DashboardPage() {
                   {syncResults.isBroadcast ? 'Broadcast Sent!' : (operation === 'add' ? 'Sync Complete!' : 'Deletion Complete!')}
                 </h3>
                 <p className="text-slate-500 text-sm mb-6">
-                  {syncResults.isBroadcast ? `Your sync requests have been sent to ${syncResults.addedCount} members.` : 'Your contacts have been processed successfully'}
+                  {syncResults.isBroadcast 
+                    ? `Your ${operation === 'add' ? 'sync' : 'delete'} requests have been sent to ${syncResults.addedCount} members.` 
+                    : 'Your contacts have been processed successfully'}
                 </p>
 
                 <div className="grid sm:grid-cols-3 gap-4 max-w-lg mx-auto">
-                  <div className={`${operation === 'add' ? 'bg-green-50' : 'bg-red-50'} rounded-xl p-4`}>
-                    <p className={`text-2xl font-bold ${operation === 'add' ? 'text-green-700' : 'text-danger'}`}>{syncResults.addedCount}</p>
-                    <p className={`text-xs font-medium ${operation === 'add' ? 'text-green-600' : 'text-danger'}`}>{operation === 'add' ? 'Added' : 'Deleted'}</p>
+                  <div className={`${syncResults.isBroadcast ? 'bg-primary-50' : (operation === 'add' ? 'bg-green-50' : 'bg-red-50')} rounded-xl p-4`}>
+                    <p className={`text-2xl font-bold ${syncResults.isBroadcast ? 'text-primary-700' : (operation === 'add' ? 'text-green-700' : 'text-danger')}`}>{syncResults.addedCount}</p>
+                    <p className={`text-xs font-medium ${syncResults.isBroadcast ? 'text-primary-600' : (operation === 'add' ? 'text-green-600' : 'text-danger')}`}>
+                      {syncResults.isBroadcast ? 'Members' : (operation === 'add' ? 'Added' : 'Deleted')}
+                    </p>
                   </div>
                   <div className="bg-amber-50 rounded-xl p-4">
                     <p className="text-2xl font-bold text-amber-700">{syncResults.skippedCount}</p>
