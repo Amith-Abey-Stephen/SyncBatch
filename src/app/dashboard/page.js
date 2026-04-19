@@ -11,7 +11,8 @@ import toast from 'react-hot-toast';
 import {
   Upload, FileSpreadsheet, Smartphone, Monitor, CheckCircle, XCircle,
   AlertTriangle, CreditCard, ArrowRight, Download, Eye, ChevronDown,
-  Zap, Shield, RefreshCw, X, Users, Trash2, Plus
+  Zap, Shield, RefreshCw, X, Users, Trash2, Plus, Send,
+  Search, Check
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -29,10 +30,31 @@ export default function DashboardPage() {
   const [syncing, setSyncing] = useState(false);
   const [operation, setOperation] = useState('add'); // add, delete
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [orgs, setOrgs] = useState([]);
+  const [selectedOrgId, setSelectedOrgId] = useState('');
+  const [selectedMemberIds, setSelectedMemberIds] = useState([]);
+  const [memberSearch, setMemberSearch] = useState('');
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
+    } else if (user) {
+      // Fetch orgs user belongs to or owns
+      fetch('/api/org').then(res => res.json()).then(data => {
+        if (data.orgs && data.orgs.length > 0) {
+          setOrgs(data.orgs);
+          
+          // Pre-select first org where user is owner, or just first org
+          const primaryOrg = data.orgs.find(o => o.ownerId === user._id) || data.orgs[0];
+          setSelectedOrgId(primaryOrg._id);
+          setSelectedMemberIds(primaryOrg.members?.map(m => m._id) || []);
+          
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('method') === 'org') {
+            setSyncMethod('org');
+          }
+        }
+      });
     }
   }, [user, loading, router]);
 
@@ -129,7 +151,7 @@ export default function DashboardPage() {
         });
         setStep('results');
         toast.success(`${data.addedCount || data.deletedCount} contacts ${operation === 'add' ? 'synced' : 'deleted'}!`);
-        refreshUser();
+        await refreshUser();
       } else {
         // iPhone VCF download
         const res = await fetch('/api/sync/vcf', {
@@ -166,10 +188,81 @@ export default function DashboardPage() {
         setSyncProgress({ current: contacts.length, total: contacts.length });
         setStep('results');
         toast.success('VCF file downloaded!');
-        refreshUser();
+        await refreshUser();
       }
     } catch (error) {
       toast.error('Sync failed. Please try again.');
+      setStep('method');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleBroadcastSync = async () => {
+    if (selectedMemberIds.length === 0) {
+      toast.error('Please select at least one member');
+      return;
+    }
+
+    setSyncing(true);
+    setStep('syncing');
+    setSyncProgress({ current: 0, total: selectedMemberIds.length });
+
+    try {
+      const res = await fetch('/api/sync-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contacts,
+          title: filename || `Broadcast ${new Date().toLocaleDateString()}`,
+          targetUserIds: selectedMemberIds,
+          orgId: selectedOrgId,
+          operation: operation
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || 'Broadcast failed');
+        setStep('method');
+        setSyncing(false);
+        return;
+      }
+
+      setSyncResults({
+        addedCount: selectedMemberIds.length,
+        skippedCount: 0,
+        creditsRemaining: data.syncRequest ? (user.credits - 1) : user.credits,
+        isBroadcast: true
+      });
+      setSyncProgress({ current: selectedMemberIds.length, total: selectedMemberIds.length });
+      setStep('results');
+      toast.success('Sync requests sent to members!');
+      await refreshUser();
+
+      // If "Me (Owner)" was selected, trigger a self-sync automatically
+      if (selectedMemberIds.includes(user._id) && data.syncRequest) {
+        toast.loading('Syncing your device...', { id: 'self-sync' });
+        try {
+          const syncRes = await fetch(`/api/sync-requests/${data.syncRequest._id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'sync' }),
+          });
+          if (syncRes.ok) {
+            toast.success('Your contacts synced!', { id: 'self-sync' });
+          } else {
+            toast.error('Failed to sync your device', { id: 'self-sync' });
+          }
+        } catch (e) {
+          toast.error('Self-sync failed', { id: 'self-sync' });
+        }
+      }
+
+      refreshUser();
+    } catch (error) {
+      toast.error('Broadcast failed. Please try again.');
       setStep('method');
     } finally {
       setSyncing(false);
@@ -226,6 +319,44 @@ export default function DashboardPage() {
             <p className="text-slate-500 text-sm">Upload contacts and sync them to your phone</p>
           </div>
 
+          {/* Deletion Warning Banner */}
+          {user.deletionScheduledAt && (
+            <div className="mb-8 bg-red-50 border border-red-100 rounded-2xl p-6 flex items-center justify-between gap-4 fade-in-up">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-red-900">Account Deletion Scheduled</h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    Your account is scheduled to be deleted on <strong>{new Date(user.deletionScheduledAt).toLocaleDateString()}</strong>. 
+                    Login again or click the button to cancel.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/user/delete-request', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ cancel: true }),
+                    });
+                    if (res.ok) {
+                      toast.success('Account deletion cancelled');
+                      refreshUser();
+                    }
+                  } catch (e) {
+                    toast.error('Failed to cancel deletion');
+                  }
+                }}
+                className="px-4 py-2 bg-white text-red-600 font-bold rounded-lg border border-red-200 hover:bg-red-50 transition-all text-sm whitespace-nowrap"
+              >
+                Cancel Deletion
+              </button>
+            </div>
+          )}
+
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 fade-in-up-delayed">
             <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
@@ -233,7 +364,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Credits</p>
                   <p className="text-2xl font-bold text-slate-900 mt-1">
-                    {user.freeUsed ? user.credits : '1 Free'}
+                    {step === 'results' && syncResults ? syncResults.creditsRemaining : (user.freeUsed ? user.credits : '1 Free')}
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
@@ -343,6 +474,12 @@ export default function DashboardPage() {
                 <h3 className="text-lg font-semibold text-slate-800 mb-2">
                   {uploading ? 'Processing...' : isDragActive ? 'Drop your file here' : (operation === 'add' ? 'Upload Contacts to Add' : 'Upload Contacts to Delete')}
                 </h3>
+                {syncMethod === 'org' && (
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
+                    <Users className="w-3 h-3" />
+                    Institution Broadcast Mode
+                  </div>
+                )}
                 <p className="text-sm text-slate-400 mb-4">
                   Drag & drop your Excel or CSV file with the contacts you {operation === 'add' ? 'want to add' : 'want to remove'}
                 </p>
@@ -474,9 +611,9 @@ export default function DashboardPage() {
           {step === 'method' && (
             <div className="fade-in-up space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
-                <button
+                <div
                   onClick={() => setSyncMethod('google')}
-                  className={`bg-white rounded-2xl p-6 border-2 text-left transition-all ${
+                  className={`bg-white rounded-2xl p-6 border-2 text-left transition-all cursor-pointer ${
                     syncMethod === 'google' ? 'border-primary-500 shadow-lg shadow-primary-600/10 ring-2 ring-primary-100' : 'border-slate-200 hover:border-primary-200'
                   }`}
                 >
@@ -500,12 +637,11 @@ export default function DashboardPage() {
                       <CheckCircle className="w-4 h-4" /> Selected
                     </div>
                   )}
-                </button>
+                </div>
 
-                <button
-                  onClick={() => setSyncMethod('iphone')}
-                  disabled={operation === 'delete'}
-                  className={`bg-white rounded-2xl p-6 border-2 text-left transition-all ${
+                <div
+                  onClick={() => ! (operation === 'delete') && setSyncMethod('iphone')}
+                  className={`bg-white rounded-2xl p-6 border-2 text-left transition-all cursor-pointer ${
                     syncMethod === 'iphone' ? 'border-primary-500 shadow-lg shadow-primary-600/10 ring-2 ring-primary-100' : 'border-slate-200 hover:border-primary-200'
                   } ${operation === 'delete' ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
@@ -521,7 +657,180 @@ export default function DashboardPage() {
                       <CheckCircle className="w-4 h-4" /> Selected
                     </div>
                   )}
-                </button>
+                </div>
+
+                {orgs.length > 0 && (
+                  <div
+                    onClick={() => setSyncMethod('org')}
+                    className={`bg-white rounded-[2rem] p-8 border-2 text-left transition-all col-span-full cursor-pointer ${
+                      syncMethod === 'org' ? 'border-primary-500 shadow-2xl shadow-primary-600/10 ring-4 ring-indigo-50' : 'border-slate-100 hover:border-primary-200'
+                    }`}
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-14 h-14 ${operation === 'add' ? 'bg-primary-50 text-primary-600' : 'bg-red-50 text-red-600'} rounded-2xl flex items-center justify-center shadow-inner`}>
+                          {operation === 'add' ? <Users className="w-7 h-7" /> : <Trash2 className="w-7 h-7" />}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-black text-slate-800 tracking-tight">
+                            {operation === 'add' ? 'Broadcast to Organization' : 'Bulk Delete from Organization'}
+                          </h3>
+                          <p className="text-sm text-slate-500 font-medium">
+                            {operation === 'add' ? "Push contacts to your team's devices instantly." : "Request team members to remove these contacts from their devices."}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`self-start md:self-center ${operation === 'add' ? 'bg-primary-100 text-primary-700' : 'bg-red-100 text-red-700'} text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest`}>
+                        Institution Mode
+                      </span>
+                    </div>
+
+                    {syncMethod === 'org' && (
+                      <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                        {/* Org Selection (if multiple) */}
+                        {orgs.length > 1 && (
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Choose Organization</label>
+                            <div className="flex flex-wrap gap-2">
+                              {orgs.map(o => (
+                                <button
+                                  key={o._id}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedOrgId(o._id);
+                                    setSelectedMemberIds(o.members?.map(m => m._id) || []);
+                                  }}
+                                  className={`px-4 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                                    selectedOrgId === o._id 
+                                      ? 'border-primary-600 bg-indigo-50 text-primary-700' 
+                                      : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200'
+                                  }`}
+                                >
+                                  {o.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Search & Bulk Actions */}
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <div className="relative flex-1 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary-600 transition-colors" />
+                            <input
+                              type="text"
+                              placeholder="Search members by name or email..."
+                              value={memberSearch}
+                              onChange={(e) => setMemberSearch(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-medium"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const currentOrg = orgs.find(o => o._id === selectedOrgId);
+                                setSelectedMemberIds(currentOrg?.members?.map(m => m._id) || []);
+                              }}
+                              className="flex-1 sm:flex-none px-4 py-3.5 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold hover:bg-slate-200 transition-all"
+                            >
+                              Select All
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMemberIds([]);
+                              }}
+                              className="flex-1 sm:flex-none px-4 py-3.5 bg-slate-100 text-slate-600 rounded-2xl text-xs font-bold hover:bg-slate-200 transition-all"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Member List */}
+                        <div className="bg-slate-50/50 border-2 border-slate-100 rounded-[1.5rem] overflow-hidden">
+                          <div className="max-h-[320px] overflow-y-auto p-2 custom-scrollbar">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {orgs.find(o => o._id === selectedOrgId)?.members
+                                ?.filter(m => 
+                                  m.name?.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                                  m.email?.toLowerCase().includes(memberSearch.toLowerCase())
+                                )
+                                .map(member => {
+                                  const isSelected = selectedMemberIds.includes(member._id);
+                                  return (
+                                    <div
+                                      key={member._id}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedMemberIds(prev => 
+                                          prev.includes(member._id) 
+                                            ? prev.filter(id => id !== member._id)
+                                            : [...prev, member._id]
+                                        );
+                                      }}
+                                      className={`flex items-center justify-between p-3 rounded-xl border-2 transition-all cursor-pointer group ${
+                                        isSelected 
+                                          ? 'bg-white border-primary-600 shadow-sm' 
+                                          : 'bg-white/50 border-transparent hover:border-slate-200'
+                                      }`}
+                                    >
+                                      <div className="flex items-center gap-3 min-w-0">
+                                        <div className="relative shrink-0">
+                                          {member.image ? (
+                                            <img src={member.image} alt={member.name} className="w-10 h-10 rounded-xl object-cover" />
+                                          ) : (
+                                            <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center text-xs font-bold text-primary-600">
+                                              {member.name?.[0]}
+                                            </div>
+                                          )}
+                                          {isSelected && (
+                                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary-600 rounded-full flex items-center justify-center border-2 border-white">
+                                              <Check className="w-2 h-2 text-white stroke-[4]" />
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="min-w-0">
+                                          <p className={`text-sm font-bold truncate ${isSelected ? 'text-slate-800' : 'text-slate-600'}`}>
+                                            {member._id === user._id ? 'Me (Owner)' : member.name}
+                                          </p>
+                                          <p className="text-[10px] text-slate-400 font-medium truncate uppercase tracking-tighter italic">
+                                            {member.email}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className={`shrink-0 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                                        isSelected ? 'bg-primary-600 border-primary-600' : 'border-slate-200 group-hover:border-primary-400'
+                                      }`}>
+                                        {isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                            
+                            {orgs.find(o => o._id === selectedOrgId)?.members?.filter(m => 
+                                m.name?.toLowerCase().includes(memberSearch.toLowerCase()) ||
+                                m.email?.toLowerCase().includes(memberSearch.toLowerCase())
+                              ).length === 0 && (
+                              <div className="py-12 text-center">
+                                <Search className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                                <p className="text-sm text-slate-400 font-bold">No members found</p>
+                                <p className="text-xs text-slate-300 mt-1">Try a different name or email</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Credit warning */}
@@ -541,6 +850,8 @@ export default function DashboardPage() {
                   onClick={() => {
                     if (operation === 'delete') {
                       setShowConfirmDelete(true);
+                    } else if (syncMethod === 'org') {
+                      handleBroadcastSync();
                     } else {
                       handleSync();
                     }
@@ -551,8 +862,12 @@ export default function DashboardPage() {
                       : 'bg-gradient-to-r from-red-600 to-red-700 shadow-red-600/25 hover:shadow-red-600/40'
                   }`}
                 >
-                  {operation === 'add' ? <Zap className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
-                  {operation === 'add' ? 'Sync Now' : 'Delete Now'} ({contacts.length} contacts)
+                  {operation === 'add' ? (
+                    syncMethod === 'org' ? <Send className="w-4 h-4" /> : <Zap className="w-4 h-4" />
+                  ) : <Trash2 className="w-4 h-4" />}
+                  {operation === 'add' ? (
+                    syncMethod === 'org' ? 'Broadcast Now' : 'Sync Now'
+                  ) : 'Delete Now'} ({contacts.length} contacts)
                 </button>
               </div>
             </div>
@@ -573,9 +888,13 @@ export default function DashboardPage() {
                   <button
                     onClick={() => {
                       setShowConfirmDelete(false);
-                      handleSync();
+                      if (syncMethod === 'org') {
+                        handleBroadcastSync();
+                      } else {
+                        handleSync();
+                      }
                     }}
-                    className="w-full py-3 bg-danger text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                    className="w-full py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
                   >
                     Yes, Delete All
                   </button>
@@ -597,9 +916,11 @@ export default function DashboardPage() {
                 <div className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-6">
                   <RefreshCw className="w-10 h-10 text-primary-600 animate-spin" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">Syncing Contacts...</h3>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                  {syncMethod === 'org' ? 'Broadcasting Requests...' : 'Syncing Contacts...'}
+                </h3>
                 <p className="text-slate-500 text-sm mb-8">
-                  {syncMethod === 'google' ? 'Adding contacts to your Google account' : 'Generating VCF file'}
+                  {syncMethod === 'org' ? 'Sending sync notifications to organization members' : (syncMethod === 'google' ? 'Adding contacts to your Google account' : 'Generating VCF file')}
                 </p>
 
                 <div className="max-w-md mx-auto">
@@ -639,10 +960,10 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <h3 className="text-2xl font-bold text-slate-800 mb-2">
-                  {operation === 'add' ? 'Sync Complete!' : 'Deletion Complete!'}
+                  {syncResults.isBroadcast ? 'Broadcast Sent!' : (operation === 'add' ? 'Sync Complete!' : 'Deletion Complete!')}
                 </h3>
                 <p className="text-slate-500 text-sm mb-6">
-                  Your contacts have been processed successfully
+                  {syncResults.isBroadcast ? `Your sync requests have been sent to ${syncResults.addedCount} members.` : 'Your contacts have been processed successfully'}
                 </p>
 
                 <div className="grid sm:grid-cols-3 gap-4 max-w-lg mx-auto">

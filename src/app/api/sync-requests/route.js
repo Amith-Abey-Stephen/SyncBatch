@@ -42,9 +42,9 @@ export async function POST(request) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { contacts, title, targetUserIds } = await request.json();
+    const { contacts, title, targetUserIds, orgId, operation } = await request.json();
 
-    if (!contacts || !targetUserIds || targetUserIds.length === 0) {
+    if (!contacts || !targetUserIds || targetUserIds.length === 0 || !orgId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -67,10 +67,14 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 });
     }
 
-    // Get user's org
-    const org = await Organization.findOne({ ownerId: session.userId });
+    // Verify user belongs to org or owns it
+    const org = await Organization.findOne({ 
+      _id: orgId,
+      $or: [{ ownerId: session.userId }, { members: session.userId }]
+    });
+
     if (!org) {
-      return NextResponse.json({ error: 'You must own an organization' }, { status: 403 });
+      return NextResponse.json({ error: 'Invalid organization' }, { status: 403 });
     }
 
     // Create contact list
@@ -85,6 +89,7 @@ export async function POST(request) {
     const syncRequest = await SyncRequest.create({
       listId: contactList._id,
       requestedBy: session.userId,
+      operation: operation || 'add',
       targetUsers: targetUserIds.map(uid => ({
         userId: uid,
         status: 'pending',

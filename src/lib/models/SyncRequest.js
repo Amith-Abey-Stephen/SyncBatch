@@ -8,6 +8,7 @@ const SyncRequestSchema = new mongoose.Schema({
     status: { type: String, enum: ['pending', 'done', 'ignored'], default: 'pending' },
     syncedAt: { type: Date, default: null },
   }],
+  operation: { type: String, enum: ['add', 'delete'], default: 'add' },
 }, { timestamps: true });
 
 export default mongoose.models.SyncRequest || mongoose.model('SyncRequest', SyncRequestSchema);
