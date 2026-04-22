@@ -74,6 +74,7 @@ SyncBatch uses a credit-based system. **1 Sync = 1 Credit**.
 *   MongoDB Instance
 *   Google Cloud Console Account (Enable People API)
 *   Razorpay API Keys
+*   Resend API Key (for Contact Form)
 
 ### 2. Environment Variables (.env.local)
 ```env
@@ -85,6 +86,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 RAZORPAY_KEY_ID=your_id
 RAZORPAY_KEY_SECRET=your_secret
 NEXT_PUBLIC_SESSION_TIMEOUT=1800
+RESEND_API_KEY=your_resend_api_key
 ```
 
 ### 3. Run Locally

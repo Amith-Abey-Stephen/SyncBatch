@@ -1,24 +1,43 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req) {
   try {
     const body = await req.json();
     const { name, email, subject, message, type } = body;
+    const { data, error } = await resend.emails.send({
+      from: 'SyncBatch <support@amith.site>',
+      to: ['contact.inovuslabs@gmail.com'],
+      replyTo: email,
+      subject: `[SyncBatch Support] ${subject || type || 'New Contact Request'}`,
+      text: `
+Name: ${name}
+Email: ${email}
+Type: ${type || 'N/A'}
 
-    // In a real application, you would:
-    // 1. Send an email using Resend/SendGrid
-    // 2. Save to a database (e.g., MongoDB SupportTicket model)
-    // 3. Send a Slack/Discord notification
+Message:
+${message}
+      `,
+      html: `
+        <h2>New Support Request</h2>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Type:</strong> ${type || 'N/A'}</p>
+        <br/>
+        <p><strong>Message:</strong></p>
+        <p>${message.replace(/\n/g, '<br/>')}</p>
+      `,
+    });
 
-    console.log('--- New Support Message ---');
-    console.log('Name:', name);
-    console.log('Email:', email);
-    console.log('Subject/Type:', subject || type);
-    console.log('Message:', message);
-    console.log('---------------------------');
-
-    // Simulate database/API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    if (error) {
+      console.error('Resend Error:', error);
+      return NextResponse.json(
+        { error: 'Failed to send email. Please try again later.' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ 
       success: true, 

@@ -13,7 +13,7 @@ import {
   Upload, FileSpreadsheet, Smartphone, Monitor, CheckCircle, XCircle,
   AlertTriangle, CreditCard, ArrowRight, Download, Eye, ChevronDown,
   Zap, Shield, RefreshCw, X, Users, Trash2, Plus, Send,
-  Search, Check, MessageSquare
+  Search, Check, MessageSquare, Building2
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -184,7 +184,7 @@ export default function DashboardPage() {
           skippedCount: 0,
           added: contacts,
           skipped: [],
-          creditsRemaining: Math.max(0, (user.credits || 0) - 1),
+          creditsRemaining: user.freeUsed ? Math.max(0, (user.credits || 0) - 1) : (user.credits || 0),
         });
         setSyncProgress({ current: contacts.length, total: contacts.length });
         setStep('results');
@@ -234,7 +234,7 @@ export default function DashboardPage() {
       setSyncResults({
         addedCount: selectedMemberIds.length,
         skippedCount: 0,
-        creditsRemaining: data.syncRequest ? (user.credits - 1) : user.credits,
+        creditsRemaining: data.syncRequest ? (user.freeUsed ? Math.max(0, user.credits - 1) : user.credits) : (user.freeUsed ? user.credits : (user.credits > 0 ? user.credits + 1 : '1 Free')),
         isBroadcast: true
       });
       setSyncProgress({ current: selectedMemberIds.length, total: selectedMemberIds.length });
@@ -374,7 +374,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Credits</p>
                   <p className="text-2xl font-bold text-slate-900 mt-1">
-                    {step === 'results' && syncResults ? syncResults.creditsRemaining : (user.freeUsed ? user.credits : '1 Free')}
+                    {step === 'results' && syncResults ? syncResults.creditsRemaining : (user.freeUsed ? user.credits : (user.credits > 0 ? user.credits + 1 : '1 Free'))}
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">

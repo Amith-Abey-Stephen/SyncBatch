@@ -89,7 +89,7 @@ export default function PrivacyPage() {
                   5. Google API Disclosure
                 </h2>
                 <p className="text-slate-700 leading-relaxed text-sm italic">
-                  SyncBatch's use and transfer of information received from Google APIs to any other app will adhere to the 
+                  SyncBatch&apos;s use and transfer of information received from Google APIs to any other app will adhere to the 
                   <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes" target="_blank" className="text-primary-600 underline ml-1">
                     Google API Service User Data Policy
                   </a>, including the Limited Use requirements.
