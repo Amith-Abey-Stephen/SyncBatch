@@ -43,12 +43,13 @@ export default function PrivacyPage() {
                   2. How We Use Your Data
                 </h2>
                 <p className="text-slate-600 leading-relaxed text-sm">
-                  We use your information exclusively to:
+                  We use your information exclusively to provide and improve our services. <strong>We do not sell, trade, or rent your personal information or contact data to third parties.</strong> We use your data to:
                 </p>
                 <ul className="list-disc pl-5 mt-4 space-y-2 text-slate-600 text-sm">
-                  <li>Facilitate the synchronization of contacts between your provided files and your Google account.</li>
+                  <li>Facilitate the synchronization of contacts between your provided files and your Google account via the Google People API.</li>
                   <li>Process payments and manage your credit balance via Razorpay.</li>
                   <li>Provide administrative access and organization management features if you are on an Institutional Plan.</li>
+                  <li>Improve our internal parsing logic to better detect contact fields.</li>
                 </ul>
               </section>
 
@@ -80,6 +81,22 @@ export default function PrivacyPage() {
                   <li><strong>Razorpay</strong>: For secure payment processing. We do not store your credit card details.</li>
                   <li><strong>Vercel</strong>: For hosting and high-performance serverless execution.</li>
                 </ul>
+              </section>
+
+              <section className="bg-primary-50/50 p-6 rounded-2xl border border-primary-100">
+                <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2 text-primary-700">
+                  <Shield className="w-5 h-5" />
+                  5. Google API Disclosure
+                </h2>
+                <p className="text-slate-700 leading-relaxed text-sm italic">
+                  SyncBatch's use and transfer of information received from Google APIs to any other app will adhere to the 
+                  <a href="https://developers.google.com/terms/api-services-user-data-policy#additional_requirements_for_specific_api_scopes" target="_blank" className="text-primary-600 underline ml-1">
+                    Google API Service User Data Policy
+                  </a>, including the Limited Use requirements.
+                </p>
+                <p className="text-slate-600 leading-relaxed text-sm mt-4">
+                  We specifically use the <code>https://www.googleapis.com/auth/contacts</code> scope to create, update, and delete contacts <strong>only</strong> when you explicitly request a sync or bulk delete action. This data is never stored permanently on our servers and is used solely to facilitate the transfer from your files to your Google account.
+                </p>
               </section>
 
               <div className="pt-10 border-t border-slate-100 mt-10">
