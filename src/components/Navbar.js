@@ -51,7 +51,7 @@ export default function Navbar() {
                 <Link href="/credits" className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all flex items-center gap-1.5 border border-transparent hover:border-primary-100">
                   <CreditCard className="w-4 h-4 text-primary-500" />
                   <span className="tabular-nums">
-                    {user.freeUsed ? `${user.credits} Credits` : (user.credits > 0 ? `${user.credits + 1} Credits` : '1 Free Sync')}
+                    {user.credits} Credits
                   </span>
                 </Link>
                 <Link href="/organization" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all flex items-center gap-1.5 relative group">

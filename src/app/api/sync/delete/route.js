@@ -25,7 +25,7 @@ export async function POST(request) {
     }
 
     // Check credits
-    const hasCredits = !user.freeUsed || user.credits > 0;
+    const hasCredits = user.credits > 0;
     if (!hasCredits) {
       return NextResponse.json({ error: 'Insufficient credits. Please purchase more.' }, { status: 403 });
     }
@@ -129,11 +129,8 @@ export async function POST(request) {
     }
 
     // Deduct credit
-    if (!user.freeUsed) {
-      user.freeUsed = true;
-    } else {
-      user.credits -= 1;
-    }
+    user.credits -= 1;
+    if (!user.freeUsed) user.freeUsed = true;
     await user.save();
 
     return NextResponse.json({

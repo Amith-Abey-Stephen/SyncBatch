@@ -100,7 +100,7 @@ export async function POST(request) {
     }
 
     // Check credits (1 credit per sync request)
-    if (user.credits < 1 && user.freeUsed) {
+    if (user.credits < 1) {
       return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 });
     }
 
@@ -135,11 +135,8 @@ export async function POST(request) {
     });
 
     // Deduct credit
-    if (!user.freeUsed) {
-      user.freeUsed = true;
-    } else {
-      user.credits -= 1;
-    }
+    user.credits -= 1;
+    if (!user.freeUsed) user.freeUsed = true;
     await user.save();
 
     return NextResponse.json({ success: true, syncRequest });

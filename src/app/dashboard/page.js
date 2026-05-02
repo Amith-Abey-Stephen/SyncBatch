@@ -374,7 +374,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Credits</p>
                   <p className="text-2xl font-bold text-slate-900 mt-1">
-                    {step === 'results' && syncResults ? syncResults.creditsRemaining : (user.freeUsed ? user.credits : (user.credits > 0 ? user.credits + 1 : '1 Free'))}
+                    {step === 'results' && syncResults ? syncResults.creditsRemaining : user.credits}
                   </p>
                 </div>
                 <div className="w-10 h-10 bg-primary-50 rounded-xl flex items-center justify-center">
