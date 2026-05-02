@@ -875,8 +875,7 @@ export default function DashboardPage() {
               <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 flex items-center gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
                 <p className="text-sm text-amber-800">
-                  <strong>This will use 1 credit.</strong>{' '}
-                  {!user.freeUsed ? 'You have 1 free sync remaining.' : `You have ${user.credits} credits remaining.`}
+                  <strong>This will use 1 credit.</strong> You have {user.credits} credits remaining.
                 </p>
               </div>
 
