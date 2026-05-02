@@ -327,7 +327,7 @@ export default function OrganizationPage() {
               <p className="text-slate-500 text-sm">Create or manage your organization and send sync requests to members</p>
             </div>
             <Link 
-              href="/contact"
+              href="/#contact"
               className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-white hover:text-primary-600 hover:border-primary-200 transition-all text-xs"
             >
               <MessageSquare className="w-3.5 h-3.5" />

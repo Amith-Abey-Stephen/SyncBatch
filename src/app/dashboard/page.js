@@ -105,8 +105,7 @@ export default function DashboardPage() {
 
   const handleSync = async () => {
     // Check credits
-    const hasCredits = !user.freeUsed || user.credits > 0;
-    if (!hasCredits) {
+    if (user.credits < 1) {
       toast.error('No credits remaining. Please buy more credits.');
       router.push('/credits');
       return;
@@ -147,8 +146,9 @@ export default function DashboardPage() {
 
         setSyncResults({
           ...data,
-          addedCount: data.addedCount || data.deletedCount,
-          skippedCount: data.skippedCount
+          addedCount: data.addedCount ?? data.deletedCount ?? 0,
+          skippedCount: data.skippedCount ?? 0,
+          creditsRemaining: data.creditsRemaining ?? user.credits - 1
         });
         setStep('results');
         toast.success(`${data.addedCount || data.deletedCount} contacts ${operation === 'add' ? 'synced' : 'deleted'}!`);
@@ -184,7 +184,7 @@ export default function DashboardPage() {
           skippedCount: 0,
           added: contacts,
           skipped: [],
-          creditsRemaining: user.freeUsed ? Math.max(0, (user.credits || 0) - 1) : (user.credits || 0),
+          creditsRemaining: user.credits - 1,
         });
         setSyncProgress({ current: contacts.length, total: contacts.length });
         setStep('results');
@@ -234,7 +234,7 @@ export default function DashboardPage() {
       setSyncResults({
         addedCount: selectedMemberIds.length,
         skippedCount: 0,
-        creditsRemaining: data.syncRequest ? (user.freeUsed ? Math.max(0, user.credits - 1) : user.credits) : (user.freeUsed ? user.credits : (user.credits > 0 ? user.credits + 1 : '1 Free')),
+        creditsRemaining: user.credits - 1,
         isBroadcast: true
       });
       setSyncProgress({ current: selectedMemberIds.length, total: selectedMemberIds.length });
@@ -321,7 +321,7 @@ export default function DashboardPage() {
               <p className="text-slate-500 text-sm">Upload contacts and sync them to your phone</p>
             </div>
             <Link 
-              href="/contact"
+              href="/#contact"
               className="inline-flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-white hover:text-primary-600 hover:border-primary-200 transition-all text-xs"
             >
               <MessageSquare className="w-3.5 h-3.5" />
@@ -1009,7 +1009,7 @@ export default function DashboardPage() {
 
                 <div className="grid sm:grid-cols-3 gap-4 max-w-lg mx-auto">
                   <div className={`${syncResults.isBroadcast ? 'bg-primary-50' : (operation === 'add' ? 'bg-green-50' : 'bg-red-50')} rounded-xl p-4`}>
-                    <p className={`text-2xl font-bold ${syncResults.isBroadcast ? 'text-primary-700' : (operation === 'add' ? 'text-green-700' : 'text-danger')}`}>{syncResults.addedCount}</p>
+                    <p className={`text-2xl font-bold ${syncResults.isBroadcast ? 'text-primary-700' : (operation === 'add' ? 'text-green-700' : 'text-danger')}`}>{syncResults.addedCount ?? 0}</p>
                     <p className={`text-xs font-medium ${syncResults.isBroadcast ? 'text-primary-600' : (operation === 'add' ? 'text-green-600' : 'text-danger')}`}>
                       {syncResults.isBroadcast ? 'Members' : (operation === 'add' ? 'Added' : 'Deleted')}
                     </p>
