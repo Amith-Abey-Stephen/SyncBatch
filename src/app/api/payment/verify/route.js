@@ -40,19 +40,24 @@ export async function POST(request) {
 
     // Add credits to user
     const user = await User.findById(session.userId);
-    user.credits += transaction.creditsAdded;
+    const plan = transaction.planId ? getPlanById(transaction.planId) : null;
+    
+    const isInstitution = transaction.planId?.startsWith('institution');
+    if (isInstitution) {
+      user.orgCredits += transaction.creditsAdded;
+    } else {
+      user.credits += transaction.creditsAdded;
+    }
+    
     user.plan = 'paid';
 
     // Update Limits based on plan
-    if (transaction.planId) {
-      const plan = getPlanById(transaction.planId);
-      if (plan) {
-        if (plan.maxContacts) {
-          user.maxContactsLimit = Math.max(user.maxContactsLimit || 0, plan.maxContacts);
-        }
-        if (plan.maxOrgs) {
-          user.maxOrgsLimit = Math.max(user.maxOrgsLimit || 0, plan.maxOrgs);
-        }
+    if (plan) {
+      if (plan.maxContacts) {
+        user.maxContactsLimit = Math.max(user.maxContactsLimit || 0, plan.maxContacts);
+      }
+      if (plan.maxOrgs) {
+        user.maxOrgsLimit = Math.max(user.maxOrgsLimit || 0, plan.maxOrgs);
       }
     }
 
@@ -61,7 +66,9 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       credits: user.credits,
+      orgCredits: user.orgCredits,
       creditsAdded: transaction.creditsAdded,
+      isInstitution
     });
   } catch (error) {
     console.error('Payment verify error:', error);

@@ -23,10 +23,20 @@ export async function GET() {
     let sharedCredits = 0;
     if (orgs.length > 0) {
       // Find the owner with the most credits among all orgs user is in
-      // This is a simple way to show "potential" credits
       const owners = await User.find({ _id: { $in: orgs.map(o => o.ownerId) } });
-      sharedCredits = Math.max(...owners.map(o => o.credits || 0));
+      sharedCredits = Math.max(...owners.map(o => o.orgCredits || 0));
     }
+
+    // Count pending sync requests for notifications
+    const SyncRequest = (await import('@/lib/models/SyncRequest')).default;
+    const pendingNotifications = await SyncRequest.countDocuments({
+      targetUsers: {
+        $elemMatch: {
+          userId: session.userId,
+          status: 'pending'
+        }
+      }
+    });
 
     return NextResponse.json({ 
       user,

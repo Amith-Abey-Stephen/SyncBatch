@@ -46,18 +46,19 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 
 ---
 
-## 💳 Subscriptions & Limits
+### Subscriptions & Limits
+SyncBatch uses a dual-pool credit system to separate individual usage from team collaboration. **1 Sync = 1 Credit**.
 
-SyncBatch uses a credit-based system. **1 Sync = 1 Credit**.
-
-### Personal Packs (Individual Focus)
+#### Personal Packs (Individual Focus)
+- **Credits added to Personal Pool**: Used exclusively by the account owner for their own syncs.
 - **Intro Pack (₹29)**: 3 syncs, 100 contacts/sync limit.
 - **Power Pack (₹79)**: 10 syncs, 500 contacts/sync limit.
 - **Pro Pack (₹149)**: 25 syncs, 1,000 contacts/sync limit.
 
-### Institution Packs (Shared Pool & Collaboration)
-- **Dept Starter (₹499)**: 50 requests/credits, 2,000 contacts/sync limit, 1 Organization Hub, **Shared Credits enabled**.
-- **Campus Elite (₹1,499)**: 200 requests/credits, 10,000 contacts/sync limit, 3 Organization Hubs, Admin control panel access, **Activity Logs enabled**.
+#### Institution Packs (Shared Pool & Collaboration)
+- **Credits added to Organizational Pool**: Shared across all members of the organization hub.
+- **Dept Starter (₹499)**: 50 shared credits, 2,000 contacts/sync limit, 1 Organization Hub.
+- **Campus Elite (₹1,499)**: 200 shared credits, 10,000 contacts/sync limit, 3 Organization Hubs, Admin control panel access, **Activity Logs enabled**.
 
 ---
 

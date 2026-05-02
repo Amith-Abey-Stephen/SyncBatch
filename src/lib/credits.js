@@ -29,13 +29,14 @@ export async function deductCredits(userId, orgId = null, actionData = {}) {
   }
 
   // Check credits
-  if (targetUser.credits < 1) {
+  const creditField = orgId ? 'orgCredits' : 'credits';
+  if (targetUser[creditField] < 1) {
     return { success: false, error: `Insufficient ${orgId ? 'Organization' : 'Personal'} credits` };
   }
 
   // Deduct
-  targetUser.credits -= 1;
-  if (!targetUser.freeUsed) targetUser.freeUsed = true;
+  targetUser[creditField] -= 1;
+  if (!targetUser.freeUsed && !orgId) targetUser.freeUsed = true;
   await targetUser.save();
 
   // Log if it's an organization action
@@ -52,10 +53,9 @@ export async function deductCredits(userId, orgId = null, actionData = {}) {
     });
   }
 
-  // If user used their own credits, we might want a personal log too, but for now just returning
   return { 
     success: true, 
-    creditsRemaining: orgId ? user.credits : targetUser.credits, // User still sees their own credits in personal mode, but org mode might be different
-    orgCreditsRemaining: targetUser.credits 
+    creditsRemaining: user.credits,
+    orgCreditsRemaining: orgId ? targetUser.orgCredits : (user.orgId ? targetUser.orgCredits : 0) // This is a bit complex, but session will handle it better
   };
 }

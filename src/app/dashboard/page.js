@@ -13,11 +13,11 @@ import {
   Upload, FileSpreadsheet, Smartphone, Monitor, CheckCircle, XCircle,
   AlertTriangle, CreditCard, ArrowRight, Download, Eye, ChevronDown,
   Zap, Shield, RefreshCw, X, Users, Trash2, Plus, Send,
-  Search, Check, MessageSquare, Building2
+  Search, Check, MessageSquare, Building2, User
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { user, loading, refreshUser } = useAuth();
+  const { user, loading, refreshUser, sharedCredits } = useAuth();
   const router = useRouter();
 
   const [step, setStep] = useState('upload'); // upload, preview, method, syncing, results
@@ -701,7 +701,14 @@ export default function DashboardPage() {
 
                 {orgs.length > 0 ? (
                   <div
-                    onClick={() => setSyncMethod('org')}
+                    onClick={() => {
+                      setSyncMethod('org');
+                      if (!selectedOrgId && orgs.length > 0) {
+                        const primaryOrg = orgs.find(o => o.ownerId === user._id) || orgs[0];
+                        setSelectedOrgId(primaryOrg._id);
+                        setSelectedMemberIds(primaryOrg.members?.map(m => m._id) || []);
+                      }
+                    }}
                     className={`bg-white rounded-[2rem] p-8 border-2 text-left transition-all col-span-full cursor-pointer ${
                       syncMethod === 'org' ? 'border-primary-500 shadow-2xl shadow-primary-600/10 ring-4 ring-primary-50' : 'border-slate-100 hover:border-primary-200'
                     }`}
@@ -956,7 +963,7 @@ export default function DashboardPage() {
               <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 flex items-center gap-3">
                 <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
                 <p className="text-sm text-amber-800">
-                  <strong>This will use 1 credit.</strong> You have {user.credits} credits remaining.
+                  <strong>This will use 1 credit.</strong> You have {selectedOrgId ? sharedCredits : user.credits} {selectedOrgId ? 'shared' : ''} credits remaining.
                 </p>
               </div>
 

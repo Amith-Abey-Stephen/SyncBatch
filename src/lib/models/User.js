@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema({
   image: { type: String, default: '' },
   googleId: { type: String, unique: true },
   credits: { type: Number, default: 0 },
+  orgCredits: { type: Number, default: 0 },
   freeUsed: { type: Boolean, default: false },
   plan: { type: String, enum: ['free', 'paid'], default: 'free' },
   role: { type: String, enum: ['admin', 'user'], default: 'user' },

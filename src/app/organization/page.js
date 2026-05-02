@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function OrganizationPage() {
-  const { user, loading, refreshUser } = useAuth();
+  const { user, loading, refreshUser, sharedCredits } = useAuth();
   const router = useRouter();
   const [orgs, setOrgs] = useState([]);
   const [activeOrgIdx, setActiveOrgIdx] = useState(0);
@@ -431,11 +431,16 @@ export default function OrganizationPage() {
                       </div>
                       <div className="w-px h-10 bg-slate-100 mx-2 hidden sm:block" />
                       <div className="text-right hidden sm:block">
-                        <p className="text-2xl font-black text-primary-600">{syncRequests.sent?.length || 0}</p>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Broadcasts</p>
+                        <p className="text-2xl font-black text-primary-600 tabular-nums">{sharedCredits}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shared Credits</p>
+                      </div>
+                      <div className="w-px h-10 bg-slate-100 mx-2 hidden sm:block" />
+                      <div className="text-right hidden sm:block">
+                        <p className="text-2xl font-black text-slate-800">{orgLogs.length || 0}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Activities</p>
                       </div>
                       <button 
-                        onClick={() => { fetchOrg(); fetchRequests(); }}
+                        onClick={() => { fetchOrg(); fetchRequests(org._id); fetchLogs(org._id); }}
                         className="ml-4 p-3 bg-slate-50 text-slate-400 hover:text-primary-600 rounded-2xl transition-all border border-slate-100 shadow-inner"
                         title="Refresh Command Center"
                       >
