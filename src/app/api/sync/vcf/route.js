@@ -3,6 +3,7 @@ import { getSession } from '@/lib/session';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 import { generateVCF } from '@/lib/contacts';
+import { deductCredits } from '@/lib/credits';
 
 export async function POST(request) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { contacts } = await request.json();
+    const { contacts, orgId } = await request.json();
 
     if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {
       return NextResponse.json({ error: 'No contacts provided' }, { status: 400 });
@@ -32,19 +33,20 @@ export async function POST(request) {
       }, { status: 403 });
     }
 
-    // Check credits
-    const hasCredits = user.credits > 0;
-    if (!hasCredits) {
-      return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 });
+    // Use centralized credit utility
+    const creditResult = await deductCredits(user._id, orgId, {
+      action: 'sync',
+      method: 'vcf',
+      contactsCount: contacts.length,
+      details: 'Generate VCF for iPhone'
+    });
+
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 403 });
     }
 
     // Generate VCF
     const vcfContent = generateVCF(contacts);
-
-    // Deduct credit
-    user.credits -= 1;
-    if (!user.freeUsed) user.freeUsed = true;
-    await user.save();
 
     return new NextResponse(vcfContent, {
       headers: {

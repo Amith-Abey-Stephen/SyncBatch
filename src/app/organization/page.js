@@ -32,6 +32,8 @@ export default function OrganizationPage() {
   const [previewRequest, setPreviewRequest] = useState(null);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncMessage, setSyncMessage] = useState('');
+  const [orgLogs, setOrgLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   // Modals
   const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'danger', title: '', message: '', onConfirm: () => {} });
@@ -65,6 +67,20 @@ export default function OrganizationPage() {
     }
   }, []);
 
+  const fetchLogs = useCallback(async (orgId) => {
+    if (!orgId) return;
+    setLogsLoading(true);
+    try {
+      const res = await fetch(`/api/org/logs?orgId=${orgId}`);
+      const data = await res.json();
+      setOrgLogs(data.logs || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLogsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       fetchOrg();
@@ -75,9 +91,13 @@ export default function OrganizationPage() {
     if (user && orgs.length > 0) {
       const activeOrg = orgs[activeOrgIdx];
       fetchRequests(activeOrg?._id);
+      fetchLogs(activeOrg?._id);
 
       // Poll for new requests every 10 seconds
-      const interval = setInterval(() => fetchRequests(activeOrg?._id), 10000);
+      const interval = setInterval(() => {
+        fetchRequests(activeOrg?._id);
+        fetchLogs(activeOrg?._id);
+      }, 10000);
       return () => clearInterval(interval);
     }
   }, [user, orgs, activeOrgIdx, fetchRequests]);
@@ -512,9 +532,9 @@ export default function OrganizationPage() {
               {/* Main Content Tabs */}
               <div className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
                 <div className="flex border-b border-slate-50 bg-slate-50/30">
-                  {['Team Members', 'Broadcast Inbox', 'Broadcast History'].map((tab) => {
-                    const id = tab === 'Team Members' ? 'members' : tab === 'Broadcast Inbox' ? 'incoming' : 'sent';
-                    const isActive = reqTab === id || (id === 'members' && !['incoming', 'sent'].includes(reqTab));
+                  {['Team Members', 'Broadcast Inbox', 'Broadcast History', 'Activity Log'].map((tab) => {
+                    const id = tab === 'Team Members' ? 'members' : tab === 'Broadcast Inbox' ? 'incoming' : tab === 'Broadcast History' ? 'sent' : 'logs';
+                    const isActive = reqTab === id || (id === 'members' && !['incoming', 'sent', 'logs'].includes(reqTab));
                     return (
                       <button
                         key={tab}
@@ -743,6 +763,74 @@ export default function OrganizationPage() {
                       )}
                     </div>
                   )}
+
+                  {/* Logs Tab */}
+                  {reqTab === 'logs' && (
+                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2">
+                      {logsLoading && orgLogs.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12">
+                          <RefreshCw className="w-8 h-8 text-primary-500 animate-spin mb-4" />
+                          <p className="text-slate-400 font-medium">Fetching activity logs...</p>
+                        </div>
+                      ) : orgLogs.length > 0 ? (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left border-collapse min-w-[500px]">
+                            <thead>
+                              <tr className="border-b border-slate-50">
+                                <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Member</th>
+                                <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Action</th>
+                                <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Qty</th>
+                                <th className="pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 text-right">Time</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {orgLogs.map((log) => (
+                                <tr key={log._id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-50/50">
+                                  <td className="py-4 px-2">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-7 h-7 bg-primary-50 rounded-lg flex items-center justify-center text-[10px] font-bold text-primary-600 shadow-inner">
+                                        {log.userName?.[0] || 'U'}
+                                      </div>
+                                      <span className="text-sm font-bold text-slate-700">{log.userName}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-2">
+                                    <div className="flex flex-col gap-1">
+                                      <span className={`inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter ${
+                                        log.action === 'broadcast' ? 'bg-amber-100 text-amber-700' : 
+                                        log.action === 'sync' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                                      }`}>
+                                        {log.action === 'broadcast' && <Zap className="w-2.5 h-2.5" />}
+                                        {log.action === 'sync' && <RefreshCw className="w-2.5 h-2.5" />}
+                                        {log.action}
+                                      </span>
+                                      <p className="text-[10px] text-slate-400 truncate max-w-[200px]">{log.details}</p>
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-2">
+                                    <span className="text-xs font-bold text-slate-600">{log.contactsCount} items</span>
+                                  </td>
+                                  <td className="py-4 px-2 text-right">
+                                    <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">
+                                      {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    <p className="text-[9px] text-slate-300 font-medium">{new Date(log.createdAt).toLocaleDateString()}</p>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-20 bg-slate-50 rounded-[2rem]">
+                          <Activity className="w-12 h-12 text-slate-200 mx-auto mb-4" />
+                          <p className="text-slate-400 font-bold tracking-tight">No activity logs found</p>
+                          <p className="text-xs text-slate-300 mt-1">Shared credit usage will appear here</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                 {/* Danger Zone */}
                 {org.ownerId === user._id && (
                   <div className="mt-8 pt-8 border-t border-slate-100">

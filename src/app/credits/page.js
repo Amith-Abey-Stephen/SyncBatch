@@ -80,9 +80,10 @@ export default function CreditsPage() {
             });
             const verifyData = await verifyRes.json();
             if (verifyRes.ok) {
+              const isInstitutional = planId.toLowerCase().includes('institution');
               toast.success(`${verifyData.creditsAdded} credits added! Total: ${verifyData.credits}`);
               await refreshUser();
-              router.push('/dashboard');
+              router.push(isInstitutional ? '/organization' : '/dashboard');
             } else {
               toast.error('Payment verification failed');
             }

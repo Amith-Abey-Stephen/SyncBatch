@@ -13,6 +13,8 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 *   **Bulk Management**: Advanced "Bulk Delete" mode to remove uploaded contact batches from your Google account in seconds.
 *   **iPhone Support**: Dynamic generation of `.vcf` (vCard) files mapping directly to Apple's native importing.
 *   **Multi-Organization Hubs**: Create multiple synchronization hubs for different departments or teams with strict **Data Isolation**.
+*   **Shared Organizational Credits**: Organizations share a central credit pool owned by the administrator. Members can seamlessly use shared credits for their personal syncs or broadcasts.
+*   **Real-Time Activity Logging**: A premium audit trail tracking every sync, broadcast, and deletion within an organization, providing owners with full transparency into credit consumption.
 *   **Team Control Center**: Advanced management for owners, including **Ownership Transfer**, **Member Removal**, and **Organization Deletion**.
 *   **Real-Time Sync Feedback**: Members receive live progress updates during broadcasts with a dedicated "Secure Sync" UI.
 *   **Credit/Payment System**: Razorpay integration with 'Pay Per Sync' models spanning Personal and Institutional limits.
@@ -37,9 +39,10 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 ### 2. Institutional Flow (For Organizations)
 *   **Step 1: Formation**: Create one or more Organizations (Requires Institution Pack).
 *   **Step 2: Team Building**: Generate unique invite links and onboard members.
-*   **Step 3: Request Creation**: Upload a contact list and create a "Sync Request" (Add or Delete) targeting specific members.
-*   **Step 4: Member Action**: Members receive a real-time notification. They can **Preview Contacts** and click **Sync Now** to start a secure, animated synchronization process.
-*   **Step 5: Monitoring**: Org owners can track which members have completed the sync and manage team access in real-time.
+*   **Step 3: Shared Usage**: Members can perform personal syncs using the organization's shared credit pool.
+*   **Step 4: Request Creation**: Owners can upload a list and create a "Sync Request" (Add or Delete) targeting specific members.
+*   **Step 5: Member Action**: Members receive a real-time notification to preview and sync the broadcasted list.
+*   **Step 6: Auditing**: Owners monitor usage via the **Activity Log** which captures member actions and item counts.
 
 ---
 
@@ -47,14 +50,14 @@ SyncBatch enables users to instantly upload contact lists (.xlsx, .csv) and sync
 
 SyncBatch uses a credit-based system. **1 Sync = 1 Credit**.
 
-### Personal Packs (Single-User Focus)
+### Personal Packs (Individual Focus)
 - **Intro Pack (₹29)**: 3 syncs, 100 contacts/sync limit.
 - **Power Pack (₹79)**: 10 syncs, 500 contacts/sync limit.
 - **Pro Pack (₹149)**: 25 syncs, 1,000 contacts/sync limit.
 
-### Institution Packs (Multi-User Collaboration)
-- **Dept Starter (₹499)**: 50 requests, 2,000 contacts/sync limit, 1 Organization Hub.
-- **Campus Elite (₹1,499)**: 200 requests, 10,000 contacts/sync limit, 3 Organization Hubs, Admin control panel access.
+### Institution Packs (Shared Pool & Collaboration)
+- **Dept Starter (₹499)**: 50 requests/credits, 2,000 contacts/sync limit, 1 Organization Hub, **Shared Credits enabled**.
+- **Campus Elite (₹1,499)**: 200 requests/credits, 10,000 contacts/sync limit, 3 Organization Hubs, Admin control panel access, **Activity Logs enabled**.
 
 ---
 

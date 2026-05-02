@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -8,7 +9,8 @@ import { Menu, X, Zap, LogOut, User, CreditCard, Building2, Shield, Trash2, Chev
 import toast from 'react-hot-toast';
 
 export default function Navbar() {
-  const { user, logout, refreshUser, notifications } = useAuth();
+  const pathname = usePathname();
+  const { user, logout, refreshUser, notifications, sharedCredits } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -51,25 +53,53 @@ export default function Navbar() {
                 <Link href="/credits" className="px-4 py-2 text-sm font-bold text-slate-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all flex items-center gap-1.5 border border-transparent hover:border-primary-100">
                   <CreditCard className="w-4 h-4 text-primary-500" />
                   <span className="tabular-nums">
-                    {user.credits} Credits
+                    {user.credits} Credits 
+                    {sharedCredits > 0 && user.credits !== sharedCredits && (
+                      <span className="ml-1 text-slate-400 font-medium text-[10px]">
+                        (+{sharedCredits} Shared)
+                      </span>
+                    )}
                   </span>
                 </Link>
-                <Link href="/organization" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all flex items-center gap-1.5 relative group">
-                  <Building2 className="w-4 h-4 text-slate-400 group-hover:text-primary-600" />
+                <Link 
+                  href="/organization" 
+                  className={`px-4 py-2 text-sm font-bold transition-all flex items-center gap-1.5 rounded-xl group relative ${
+                    pathname === '/organization' 
+                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/25' 
+                      : 'text-slate-600 hover:text-primary-600 hover:bg-primary-50 border border-transparent hover:border-primary-100'
+                  }`}
+                >
+                  <Building2 className={`w-4 h-4 ${pathname === '/organization' ? 'text-white' : 'text-slate-400 group-hover:text-primary-600'}`} />
                   <span>Organization</span>
                   {notifications > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm ring-2 ring-white">
+                    <span className={`absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-black shadow-sm ring-2 ${
+                      pathname === '/organization' ? 'bg-white text-primary-600 ring-primary-600' : 'bg-red-500 text-white ring-white'
+                    }`}>
                       {notifications}
                     </span>
                   )}
                 </Link>
                 {user.role === 'admin' && (
-                  <Link href="/admin" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-all">
-                    <Shield className="w-4 h-4 inline mr-1" />
+                  <Link 
+                    href="/admin" 
+                    className={`px-4 py-2 text-sm font-bold transition-all flex items-center gap-1.5 rounded-xl ${
+                      pathname === '/admin'
+                        ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/25'
+                        : 'text-slate-600 hover:text-primary-600 hover:bg-primary-50 border border-transparent hover:border-primary-100'
+                    }`}
+                  >
+                    <Shield className={`w-4 h-4 ${pathname === '/admin' ? 'text-white' : 'text-slate-400'}`} />
                     Admin
                   </Link>
                 )}
-                <Link href="/dashboard" className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-primary-600 to-primary-700 rounded-xl hover:from-primary-700 hover:to-primary-800 shadow-lg shadow-primary-600/25 hover:shadow-primary-600/40 transition-all">
+                <Link 
+                  href="/dashboard" 
+                  className={`px-5 py-2.5 text-sm font-bold rounded-xl transition-all ${
+                    pathname === '/dashboard' 
+                      ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/25' 
+                      : 'text-slate-600 hover:text-primary-600 hover:bg-primary-50 border border-transparent hover:border-primary-100'
+                  }`}
+                >
                   Dashboard
                 </Link>
                 <div className="w-px h-6 bg-slate-200 mx-1" />
@@ -167,12 +197,12 @@ export default function Navbar() {
                     </div>
                   <div>
                     <p className="font-semibold text-sm text-slate-800">{user.name}</p>
-                    <p className="text-xs text-slate-500">{user.freeUsed ? `${user.credits} Credits` : (user.credits > 0 ? `${user.credits + 1} Credits` : '1 Free Sync')} available</p>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{user.credits} Credits Available</p>
                   </div>
                 </div>
-                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Dashboard</Link>
+                <Link href="/dashboard" onClick={() => setMobileOpen(false)} className={`block px-3 py-2.5 text-sm font-bold rounded-lg ${pathname === '/dashboard' ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-primary-50'}`}>Dashboard</Link>
                 <Link href="/credits" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Buy Credits</Link>
-                <Link href="/organization" onClick={() => setMobileOpen(false)} className="flex items-center justify-between px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">
+                <Link href="/organization" onClick={() => setMobileOpen(false)} className={`flex items-center justify-between px-3 py-2.5 text-sm font-bold rounded-lg ${pathname === '/organization' ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-primary-50'}`}>
                   <span>Organization</span>
                   {notifications > 0 && (
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white shadow-sm">
@@ -190,8 +220,8 @@ export default function Navbar() {
                   Delete Account
                 </button>
                 <div className="pt-4">
-                  <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-sm font-semibold text-center text-white bg-primary-600 rounded-xl">
-                    Go to Dashboard
+                  <Link href={pathname === '/organization' ? '/organization' : '/dashboard'} onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-sm font-black uppercase tracking-widest text-center text-white bg-primary-600 rounded-xl shadow-lg shadow-primary-600/20">
+                    Go to {pathname === '/organization' ? 'Organization' : 'Dashboard'}
                   </Link>
                 </div>
               </>

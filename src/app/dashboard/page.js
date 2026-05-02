@@ -45,14 +45,16 @@ export default function DashboardPage() {
         if (data.orgs && data.orgs.length > 0) {
           setOrgs(data.orgs);
           
-          // Pre-select first org where user is owner, or just first org
-          const primaryOrg = data.orgs.find(o => o.ownerId === user._id) || data.orgs[0];
-          setSelectedOrgId(primaryOrg._id);
-          setSelectedMemberIds(primaryOrg.members?.map(m => m._id) || []);
-          
+          // By default, use personal credits for personal sync, 
+          // but pre-select org for broadcast if requested.
           const params = new URLSearchParams(window.location.search);
           if (params.get('method') === 'org') {
             setSyncMethod('org');
+            const primaryOrg = data.orgs.find(o => o.ownerId === user._id) || data.orgs[0];
+            setSelectedOrgId(primaryOrg._id);
+            setSelectedMemberIds(primaryOrg.members?.map(m => m._id) || []);
+          } else {
+            setSelectedOrgId(null);
           }
         }
       });
@@ -104,9 +106,9 @@ export default function DashboardPage() {
   });
 
   const handleSync = async () => {
-    // Check credits
-    if (user.credits < 1) {
-      toast.error('No credits remaining. Please buy more credits.');
+    // Check credits (Soft check, backend will do hard check)
+    if (!selectedOrgId && user.credits < 1) {
+      toast.error('No personal credits remaining. Please buy more credits.');
       router.push('/credits');
       return;
     }
@@ -129,7 +131,7 @@ export default function DashboardPage() {
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contacts }),
+          body: JSON.stringify({ contacts, orgId: selectedOrgId }),
         });
 
         clearInterval(progressInterval);
@@ -148,7 +150,7 @@ export default function DashboardPage() {
           ...data,
           addedCount: data.addedCount ?? data.deletedCount ?? 0,
           skippedCount: data.skippedCount ?? 0,
-          creditsRemaining: data.creditsRemaining ?? user.credits - 1
+          creditsRemaining: data.creditsRemaining ?? (selectedOrgId ? user.credits : user.credits - 1)
         });
         setStep('results');
         toast.success(`${data.addedCount || data.deletedCount} contacts ${operation === 'add' ? 'synced' : 'deleted'}!`);
@@ -158,7 +160,7 @@ export default function DashboardPage() {
         const res = await fetch('/api/sync/vcf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contacts }),
+          body: JSON.stringify({ contacts, orgId: selectedOrgId }),
         });
 
         if (!res.ok) {
@@ -328,6 +330,34 @@ export default function DashboardPage() {
               Need Help? Contact Support
             </Link>
           </div>
+
+          {/* Institutional Onboarding CTA */}
+          {user.maxOrgsLimit > 0 && orgs.length === 0 && (
+            <div className="mb-10 bg-gradient-to-r from-primary-600 to-primary-800 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-primary-600/20 group fade-in-up">
+              <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                <Building2 className="w-64 h-64" />
+              </div>
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+                <div className="max-w-xl">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
+                    <Zap className="w-3.5 h-3.5" />
+                    Institutional Plan Active
+                  </div>
+                  <h2 className="text-3xl font-black mb-4 tracking-tight">Setup your Organization Hub</h2>
+                  <p className="text-primary-100 font-medium leading-relaxed">
+                    You&apos;ve unlocked institutional features! Create your first Hub to manage members and broadcast contacts to thousands of devices instantly.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => router.push('/organization')}
+                  className="px-8 py-4 bg-white text-primary-700 font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl hover:bg-primary-50 transition-all flex items-center gap-2 whitespace-nowrap active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Hub Now
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Deletion Warning Banner */}
           {user.deletionScheduledAt && (
@@ -870,6 +900,57 @@ export default function DashboardPage() {
                   </div>
                 )}
               </div>
+
+              {/* Credit Source Selector */}
+              {orgs.length > 0 && syncMethod !== 'org' && (
+                <div className="mt-8 bg-slate-50 rounded-[2.5rem] p-6 border border-slate-100 fade-in-up">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Select Credit Source</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button 
+                      onClick={() => setSelectedOrgId(null)}
+                      className={`flex items-center justify-between px-5 py-4 rounded-2xl transition-all border-2 ${
+                        !selectedOrgId 
+                          ? 'bg-white border-primary-600 shadow-lg shadow-primary-600/10' 
+                          : 'bg-white/50 border-transparent hover:border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 text-left">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${!selectedOrgId ? 'bg-primary-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                          <User className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">Personal Pool</p>
+                          <p className="text-[10px] text-slate-500 font-bold tracking-tight uppercase">{user.credits} Credits Available</p>
+                        </div>
+                      </div>
+                      {!selectedOrgId && <CheckCircle className="w-4 h-4 text-primary-600" />}
+                    </button>
+
+                    {orgs.map(org => (
+                      <button 
+                        key={org._id}
+                        onClick={() => setSelectedOrgId(org._id)}
+                        className={`flex items-center justify-between px-5 py-4 rounded-2xl transition-all border-2 ${
+                          selectedOrgId === org._id 
+                            ? 'bg-white border-primary-600 shadow-lg shadow-primary-600/10' 
+                            : 'bg-white/50 border-transparent hover:border-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 text-left min-w-0">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${selectedOrgId === org._id ? 'bg-primary-600 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                            <Building2 className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-800 truncate">{org.name}</p>
+                            <p className="text-[10px] text-slate-500 font-bold tracking-tight uppercase">Shared Org Pool</p>
+                          </div>
+                        </div>
+                        {selectedOrgId === org._id && <CheckCircle className="w-4 h-4 text-primary-600" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Credit warning */}
               <div className="bg-amber-50 rounded-xl p-4 border border-amber-200 flex items-center gap-3">

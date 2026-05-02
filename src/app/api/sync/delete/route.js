@@ -3,6 +3,7 @@ import { getSession } from '@/lib/session';
 import connectDB from '@/lib/db';
 import User from '@/lib/models/User';
 import { refreshGoogleToken } from '@/lib/google';
+import { deductCredits } from '@/lib/credits';
 
 export async function POST(request) {
   try {
@@ -11,7 +12,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { contacts } = await request.json();
+    const { contacts, orgId } = await request.json();
 
     if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {
       return NextResponse.json({ error: 'No contacts provided' }, { status: 400 });
@@ -24,10 +25,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check credits
-    const hasCredits = user.credits > 0;
-    if (!hasCredits) {
-      return NextResponse.json({ error: 'Insufficient credits. Please purchase more.' }, { status: 403 });
+    // Use centralized credit utility
+    const creditResult = await deductCredits(user._id, orgId, {
+      action: 'delete',
+      method: 'google',
+      contactsCount: contacts.length,
+      details: 'Delete from Google Contacts'
+    });
+
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 403 });
     }
 
     // Get a valid access token
@@ -128,20 +135,14 @@ export async function POST(request) {
       await Promise.all(promises);
     }
 
-    // Deduct credit
-    user.credits -= 1;
-    if (!user.freeUsed) user.freeUsed = true;
-    await user.save();
-
     return NextResponse.json({
       deleted: deletedContacts,
       skipped: skippedContacts,
       deletedCount: deletedContacts.length,
       skippedCount: skippedContacts.length,
-      creditsRemaining: user.credits,
-      // For UI compatibility, mapping deleted to added if needed, but better to keep it descriptive
+      creditsRemaining: creditResult.creditsRemaining,
+      orgCreditsRemaining: creditResult.orgCreditsRemaining,
       addedCount: deletedContacts.length, 
-      skippedCount: skippedContacts.length,
     });
   } catch (error) {
     console.error('Delete error:', error);

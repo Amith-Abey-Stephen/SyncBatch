@@ -5,6 +5,7 @@ import User from '@/lib/models/User';
 import Organization from '@/lib/models/Organization';
 import ContactList from '@/lib/models/ContactList';
 import SyncRequest from '@/lib/models/SyncRequest';
+import { deductCredits } from '@/lib/credits';
 
 // Get sync requests for user
 export async function GET(request) {
@@ -99,9 +100,16 @@ export async function POST(request) {
       }, { status: 403 });
     }
 
-    // Check credits (1 credit per sync request)
-    if (user.credits < 1) {
-      return NextResponse.json({ error: 'Insufficient credits' }, { status: 403 });
+    // Use centralized credit utility
+    const creditResult = await deductCredits(user._id, orgId, {
+      action: 'broadcast',
+      method: operation || 'add',
+      contactsCount: contacts.length,
+      details: `Broadcast: ${title || 'Contact List'}`
+    });
+
+    if (!creditResult.success) {
+      return NextResponse.json({ error: creditResult.error }, { status: 403 });
     }
 
     // Verify user belongs to org or owns it
@@ -134,12 +142,12 @@ export async function POST(request) {
       })),
     });
 
-    // Deduct credit
-    user.credits -= 1;
-    if (!user.freeUsed) user.freeUsed = true;
-    await user.save();
-
-    return NextResponse.json({ success: true, syncRequest });
+    return NextResponse.json({ 
+      success: true, 
+      syncRequest,
+      creditsRemaining: creditResult.creditsRemaining,
+      orgCreditsRemaining: creditResult.orgCreditsRemaining
+    });
   } catch (error) {
     console.error('Sync request error:', error);
     return NextResponse.json({ error: 'Failed to create sync request' }, { status: 500 });
