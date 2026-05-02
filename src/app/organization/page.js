@@ -538,7 +538,7 @@ export default function OrganizationPage() {
                         <div key={member._id || member} className="flex items-center justify-between bg-slate-50 rounded-2xl px-5 py-4 group hover:bg-white hover:shadow-lg hover:shadow-slate-200/50 transition-all border border-transparent hover:border-slate-100">
                           <div className="flex items-center gap-4 min-w-0">
                             <div className="relative">
-                              {member.image ? (
+                              {member.image && member.image !== "" ? (
                                 <img src={member.image} alt={member.name} className="w-12 h-12 rounded-2xl object-cover" />
                               ) : (
                                 <div className="w-12 h-12 rounded-2xl bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-600">

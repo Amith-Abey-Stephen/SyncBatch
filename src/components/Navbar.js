@@ -81,7 +81,7 @@ export default function Navbar() {
                     }`}
                   >
                     <div className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center overflow-hidden">
-                      {user.image && !imageError ? (
+                      {user.image && user.image !== "" && !imageError ? (
                         <img 
                           src={user.image} 
                           alt={user.name} 

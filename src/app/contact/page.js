@@ -76,20 +76,6 @@ export default function ContactPage() {
                     detail: 'support@inovuslabs.org', 
                     desc: 'For general inquiries and support requests.',
                     color: 'bg-blue-50 text-blue-600'
-                  },
-                  { 
-                    icon: MessageSquare, 
-                    title: 'Institutional Support', 
-                    detail: 'support@inovuslabs.org', 
-                    desc: 'Dedicated help for team administrators.',
-                    color: 'bg-purple-50 text-purple-600'
-                  },
-                  { 
-                    icon: Shield, 
-                    title: 'Security & Privacy', 
-                    detail: 'support@inovuslabs.org', 
-                    desc: 'Questions about how we handle your data.',
-                    color: 'bg-emerald-50 text-emerald-600'
                   }
                 ].map((item, i) => (
                   <div key={i} className="bg-white rounded-3xl p-8 border border-slate-100 shadow-xl shadow-slate-200/40 hover:scale-[1.02] transition-all duration-300">
@@ -211,16 +197,15 @@ export default function ContactPage() {
             <div className="max-w-3xl mx-auto bg-white rounded-[2rem] p-8 border border-slate-100 shadow-lg text-left flex flex-col sm:flex-row items-center gap-8">
               <div className="w-full sm:w-1/3 h-48 bg-slate-200 rounded-2xl overflow-hidden relative grayscale hover:grayscale-0 transition-all duration-700">
                 <img 
-                  src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800" 
-                  alt="Office" 
+                  src="/inovus.webp" alt="Office" 
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="flex-1">
                 <h4 className="text-xl font-bold text-slate-800 mb-2">INOVUS LABS IEDC</h4>
                 <p className="text-sm text-slate-500 leading-relaxed mb-4">
-                  Kuriakose Elias College, Mannanam<br />
-                  Kottayam, Kerala, India - 686561
+                  Kristu Jyoti College of <br /> Management and Technology, <br />
+                  Changanassery, Kerala, India - 686104
                 </p>
                 <div className="flex items-center gap-4">
                   <a href="mailto:support@inovuslabs.org" className="text-primary-600 font-bold text-sm hover:underline flex items-center gap-1.5">

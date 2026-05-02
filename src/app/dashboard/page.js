@@ -792,7 +792,7 @@ export default function DashboardPage() {
                                     >
                                       <div className="flex items-center gap-3 min-w-0">
                                         <div className="relative shrink-0">
-                                          {member.image ? (
+                                          {member.image && member.image !== "" ? (
                                             <img src={member.image} alt={member.name} className="w-10 h-10 rounded-xl object-cover" />
                                           ) : (
                                             <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center text-xs font-bold text-primary-600">
