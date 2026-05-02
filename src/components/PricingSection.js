@@ -2,52 +2,31 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { PLANS } from '@/lib/plans';
 import { Smartphone, Building2, CheckCircle, ArrowRight, CreditCard, Sparkles } from 'lucide-react';
 
 const PricingSection = () => {
   const [isInstitutional, setIsInstitutional] = useState(false);
 
-  const personalPlans = [
-    {
-      name: 'Intro Pack',
-      price: '₹49',
-      syncs: '3 Syncs',
-      limit: '100 contacts/sync',
-      desc: 'Perfect for a quick one-time sync.',
-      features: ['100 contacts/sync', 'Lifetime Validity', 'Instant Activation'],
-      recommended: false,
-    },
-    {
-      name: 'Power Pack',
-      price: '₹99',
-      syncs: '10 Syncs',
-      limit: '500 contacts/sync',
-      desc: 'Most popular choice for active users.',
-      features: ['500 contacts/sync', 'Lifetime Validity', 'Priority Support', 'Ad-free Experience'],
-      recommended: true,
-    },
-  ];
+  const personalPlans = PLANS.personal.map(p => ({
+    name: p.name,
+    price: `₹${p.price}`,
+    syncs: `${p.credits} Syncs`,
+    limit: `${p.maxContacts} contacts/sync`,
+    desc: p.id === 'personal_3' ? 'Perfect for a quick one-time sync.' : 'Most popular choice for active users.',
+    features: p.benefits,
+    recommended: p.id === 'personal_10',
+  }));
 
-  const institutionalPlans = [
-    {
-      name: 'Dept Starter',
-      price: '₹199',
-      syncs: '1 Organization',
-      limit: '2,000 contacts/req',
-      desc: 'Ideal for small teams and departments.',
-      features: ['2,000 contacts/request', 'Admin Command Center', 'Team Member Management', 'Usage Analytics'],
-      recommended: false,
-    },
-    {
-      name: 'Enterprise',
-      price: '₹499',
-      syncs: 'Unlimited Hubs',
-      limit: '50,000 contacts/req',
-      desc: 'Full-scale solution for large institutions.',
-      features: ['50,000 contacts/request', 'Unlimited Hubs/Teams', 'API Access', 'Dedicated Support Manager'],
-      recommended: true,
-    },
-  ];
+  const institutionalPlans = PLANS.institution.map(p => ({
+    name: p.name,
+    price: `₹${p.price}`,
+    syncs: p.maxOrgs === 1 ? '1 Organization' : 'Unlimited Hubs',
+    limit: `${p.maxContacts} contacts/req`,
+    desc: p.maxOrgs === 1 ? 'Ideal for small teams and departments.' : 'Full-scale solution for large institutions.',
+    features: p.benefits,
+    recommended: p.maxOrgs !== 1,
+  }));
 
   const plans = isInstitutional ? institutionalPlans : personalPlans;
 

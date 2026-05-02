@@ -139,115 +139,119 @@ export default function CreditsPage() {
           </div>
 
           {/* Section 2: Model Toggle */}
-          <div className="grid md:grid-cols-2 gap-6 mb-12 fade-in-up-delayed-2">
-             <div 
-               onClick={() => setTab('personal')}
-               className={`cursor-pointer rounded-3xl p-6 border-2 transition-all flex items-start gap-4 ${tab === 'personal' ? 'border-primary-500 bg-white shadow-xl shadow-primary-500/10' : 'border-slate-100 bg-slate-50 opacity-60 hover:opacity-100 hover:scale-[1.01]'}`}
-             >
-                <div className="w-12 h-12 bg-primary-100 rounded-2xl flex items-center justify-center shrink-0">
-                   <Smartphone className="w-6 h-6 text-primary-600" />
-                </div>
-                <div>
-                   <h3 className="font-bold text-slate-900">Personal Sync</h3>
-                   <p className="text-xs text-slate-500 mt-1">Direct device sync for personal use.</p>
-                </div>
-             </div>
-             <div 
-               onClick={() => setTab('institution')}
-               className={`cursor-pointer rounded-3xl p-6 border-2 transition-all flex items-start gap-4 ${tab === 'institution' ? 'border-primary-500 bg-white shadow-xl shadow-primary-500/10' : 'border-slate-100 bg-slate-50 opacity-60 hover:opacity-100 hover:scale-[1.01]'}`}
-             >
-                <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center shrink-0">
-                   <Building2 className="w-6 h-6 text-purple-600" />
-                </div>
-                <div>
-                   <h3 className="font-bold text-slate-900">Institution Sync</h3>
-                   <p className="text-xs text-slate-500 mt-1">Organization & Team-wide sync requests.</p>
-                </div>
-             </div>
+          <div className="flex justify-center mb-12 fade-in-up-delayed-2">
+            <div className="relative p-1 bg-slate-100 rounded-2xl flex items-center shadow-inner border border-slate-200">
+              <button
+                onClick={() => setTab('personal')}
+                className={`relative z-10 px-8 py-3 text-sm font-bold transition-all duration-300 rounded-xl flex items-center gap-2 ${
+                  tab === 'personal' ? 'text-primary-700' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Smartphone className={`w-4 h-4 ${tab === 'personal' ? 'scale-110' : ''}`} />
+                Personal
+              </button>
+              <button
+                onClick={() => setTab('institution')}
+                className={`relative z-10 px-8 py-3 text-sm font-bold transition-all duration-300 rounded-xl flex items-center gap-2 ${
+                  tab === 'institution' ? 'text-primary-700' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <Building2 className={`w-4 h-4 ${tab === 'institution' ? 'scale-110' : ''}`} />
+                Institutional
+              </button>
+              <div
+                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-md border border-slate-200 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
+                  tab === 'institution' ? 'translate-x-full' : 'translate-x-0'
+                }`}
+              />
+            </div>
           </div>
 
-          <div className="border-t border-slate-100 pt-10 text-center mb-10 fade-in-up-delayed-2">
-            <h2 className="text-3xl font-black font-heading text-slate-900 mb-2 uppercase tracking-tighter italic">
-               {tab === 'personal' ? 'Personal' : 'Institutional'} Plans
+          <div className="text-center mb-10 fade-in-up-delayed-2">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+              Choose your <span className="text-primary-600">{tab === 'personal' ? 'Personal' : 'Institutional'} Hub</span>
             </h2>
           </div>
 
-          {/* Section 3: Pricing Cards */}
-          <div className={`grid gap-6 fade-in-up-delayed-3 ${currentPlans.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 max-w-3xl mx-auto'}`}>
+          <div className={`grid gap-8 fade-in-up-delayed-3 ${currentPlans.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2 max-w-4xl mx-auto'}`}>
             {currentPlans.map((plan) => {
-               const isRecommended = plan.id === 'institution_multi' || plan.id === 'personal_10';
-               const isElite = plan.id === 'institution_unlimited';
+               const isRecommended = plan.id === 'institution_unlimited' || plan.id === 'personal_10';
                const isEnterprise = plan.id === 'institution_unlimited';
               
               return (
                 <div 
                   key={plan.id} 
-                  className={`relative rounded-[2.5rem] p-8 border-2 transition-all hover:scale-[1.02] duration-300 ${
+                  className={`group relative p-8 rounded-[2.5rem] border transition-all duration-500 flex flex-col ${
                     isEnterprise 
-                      ? 'bg-slate-900 border-slate-800 text-white shadow-2xl shadow-primary-500/20' 
-                      : isRecommended 
-                        ? 'bg-white border-primary-500 shadow-2xl shadow-primary-600/10' 
-                        : 'bg-white border-slate-100 shadow-xl shadow-slate-200/50'
+                      ? 'bg-slate-900 border-slate-800 text-white shadow-2xl shadow-slate-900/20 scale-[1.02]' 
+                      : 'bg-white border-slate-100 text-slate-900 hover:border-primary-200 hover:shadow-xl hover:shadow-primary-600/5 hover:scale-[1.01]'
                   }`}
                 >
                   {isRecommended && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg shadow-primary-600/40">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full text-white text-[10px] font-black uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-primary-600/30">
+                      <Zap className="w-3 h-3" />
                       Most Popular
                     </div>
                   )}
-
-                  <div className="text-center">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6 ${
-                      isEnterprise ? 'bg-primary-500/20 text-primary-400' : 'bg-indigo-50 text-primary-600'
-                    }`}>
-                      {plan.id.includes('unlimited') ? <Star className="w-8 h-8" /> : <Zap className="w-8 h-8" />}
-                    </div>
-
-                    <p className={`text-xs font-black uppercase tracking-widest mb-2 ${
+ 
+                  <div className="mb-8 text-center">
+                    <p className={`text-xs font-black uppercase tracking-[0.2em] mb-4 ${
                       isEnterprise ? 'text-primary-400' : 'text-primary-600'
-                    }`}>{plan.name}</p>
-                    
-                    <div className="flex items-baseline justify-center gap-1 mb-1">
-                      <span className={`text-4xl font-black tracking-tight ${isEnterprise ? 'text-white' : 'text-slate-900'}`}>₹{plan.price}</span>
-                    </div>
-                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-8 ${isEnterprise ? 'text-slate-400' : 'text-slate-400'}`}>
-                      Synced Credits: {plan.credits}
+                    }`}>
+                      {plan.name}
                     </p>
-
-                    <ul className={`space-y-4 text-left mb-8 border-t pt-8 ${isEnterprise ? 'border-slate-800' : 'border-slate-50'}`}>
-                      {plan.benefits.map((benefit) => (
-                        <li key={benefit} className="flex items-start gap-3 text-sm font-medium">
-                          <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                            isEnterprise ? 'bg-primary-500/20 text-primary-400' : 'bg-emerald-100 text-emerald-600'
-                          }`}>
-                            <Check className="w-3 h-3 stroke-[4]" />
-                          </div>
-                          <span className={isEnterprise ? 'text-slate-300' : 'text-slate-600'}>{benefit}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                     <button
-                       onClick={() => handlePurchase(plan.id)}
-                       disabled={purchasing === plan.id}
-                       className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 ${
-                         isElite 
-                           ? 'bg-primary-600 text-white hover:bg-primary-500 shadow-primary-600/30' 
-                           : isRecommended
-                             ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-primary-600/20'
-                             : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10'
-                       }`}
-                     >
-                       {purchasing === plan.id ? (
-                         <RefreshCw className="w-4 h-4 animate-spin" />
-                       ) : (
-                         <>
-                           <CreditCard className="w-4 h-4" />
-                           {tab === 'personal' ? 'Purchase Pack' : 'Upgrade Now'}
-                         </>
-                       )}
-                     </button>
+                    <div className="flex items-baseline justify-center gap-1 mb-2">
+                      <span className="text-5xl font-black">₹{plan.price}</span>
+                      <span className={`text-sm font-bold ${isEnterprise ? 'text-slate-400' : 'text-slate-500'}`}>
+                        / pack
+                      </span>
+                    </div>
+                    <div className={`inline-block px-3 py-1 rounded-lg text-xs font-bold mb-4 ${
+                      isEnterprise ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20' : 'bg-primary-50 text-primary-600 border border-primary-100'
+                    }`}>
+                      {plan.credits} Credits
+                    </div>
                   </div>
+ 
+                  <div className={`h-px w-full mb-8 ${
+                    isEnterprise ? 'bg-slate-800' : 'bg-slate-100'
+                  }`} />
+ 
+                  <ul className="space-y-4 mb-10 flex-grow">
+                    {plan.benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-3">
+                        <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                          isEnterprise ? 'bg-primary-500/20 text-primary-400' : 'bg-emerald-50 text-emerald-500'
+                        }`}>
+                          <Check className="w-3 h-3 stroke-[4]" />
+                        </div>
+                        <span className={`text-sm font-bold ${
+                          isEnterprise ? 'text-slate-300' : 'text-slate-700'
+                        }`}>
+                          {benefit}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+ 
+                  <button
+                    onClick={() => handlePurchase(plan.id)}
+                    disabled={purchasing === plan.id}
+                    className={`w-full py-4 rounded-2xl text-sm font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300 ${
+                      isEnterprise
+                        ? 'bg-primary-600 text-white hover:bg-primary-700 shadow-lg shadow-primary-600/30'
+                        : 'bg-slate-100 text-slate-900 hover:bg-primary-600 hover:text-white border border-slate-200'
+                    } disabled:opacity-50`}
+                  >
+                    {purchasing === plan.id ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        Purchase Pack
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
+                  </button>
                 </div>
               );
             })}
