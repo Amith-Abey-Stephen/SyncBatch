@@ -132,7 +132,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/contact" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">
+                <Link href="/#contact" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">
                   Contact
                 </Link>
                 <Link href="/login" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors">
@@ -197,7 +197,7 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <Link href="/contact" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Contact Us</Link>
+                <Link href="/#contact" onClick={() => setMobileOpen(false)} className="block px-3 py-2.5 text-sm font-medium text-slate-600 rounded-lg hover:bg-primary-50">Contact Us</Link>
                 <Link href="/login" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-sm font-semibold text-center text-white bg-primary-600 rounded-xl">
                   Get Started
                 </Link>

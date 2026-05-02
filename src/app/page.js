@@ -2,7 +2,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ContactForm from '@/components/ContactForm';
 import Link from 'next/link';
-import { Upload, Smartphone, Shield, Zap, Users, CreditCard, CheckCircle, ArrowRight, FileSpreadsheet, RefreshCw, Building2, Mail, Send } from 'lucide-react';
+import { Upload, Smartphone, Shield, Zap, Users, CreditCard, CheckCircle, ArrowRight, FileSpreadsheet, RefreshCw, Mail, Send, MapPin, Globe } from 'lucide-react';
 import { Analytics } from "@vercel/analytics/next"
 import PricingSection from '@/components/PricingSection';
 
@@ -219,11 +219,76 @@ export default function Home() {
                       </div>
                     </div>
                   ))}
+
                 </div>
               </div>
 
               <div className="fade-in-up-delayed">
                 <ContactForm />
+              </div>
+            </div>
+
+            {/* Redesigned Headquarters Section - Full Width for better balance */}
+            <div className="mt-20 fade-in-up-delayed-2">
+              <div className="bg-white rounded-[3rem] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden group relative">
+                <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+                  <MapPin className="w-64 h-64 text-primary-600" />
+                </div>
+                
+                <div className="flex flex-col lg:flex-row min-h-[320px]">
+                  {/* Left: Content */}
+                  <div className="flex-1 p-8 sm:p-12 flex flex-col justify-center relative z-10">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-50 border border-primary-100 rounded-full text-primary-600 text-[10px] font-black uppercase tracking-widest mb-6 w-fit">
+                      <Globe className="w-3.5 h-3.5" />
+                      Global Operations Center
+                    </div>
+                    <h3 className="text-3xl sm:text-4xl font-black text-slate-900 mb-6 tracking-tight">
+                      Visit our <span className="text-primary-600">Innovation Hub.</span>
+                    </h3>
+                    <p className="text-lg text-slate-500 leading-relaxed font-medium mb-8 max-w-xl">
+                      Based at the heart of Kerala&apos;s tech ecosystem, our headquarters at INOVUS LABS is where we build the next generation of synchronization tools.
+                    </p>
+                    
+                    <div className="grid sm:grid-cols-2 gap-8">
+                      <div>
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Office Address</h4>
+                        <p className="text-sm font-bold text-slate-700 leading-relaxed">
+                          INOVUS LABS IEDC<br />
+                          Kristu Jyoti College of Management and Technology,<br />
+                          Changanassery, Kerala, India - 686104
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Operating Hours</h4>
+                        <p className="text-sm font-bold text-slate-700 leading-relaxed">
+                          Monday – Friday: 9:00 AM – 6:00 PM<br />
+                          Saturday: 10:00 AM – 2:00 PM<br />
+                          <span className="text-primary-600">Online Support: 24/7</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Immersive Image */}
+                  <div className="lg:w-[400px] xl:w-[500px] relative h-[300px] lg:h-auto grayscale group-hover:grayscale-0 transition-all duration-1000 overflow-hidden">
+                    <img 
+                      src="/inovus.webp" alt="Office" 
+                      className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                    />
+                    {/* Artistic Overlays */}
+                    <div className="absolute inset-0 bg-gradient-to-r lg:bg-gradient-to-l from-transparent via-transparent to-white" />
+                    <div className="absolute inset-0 bg-primary-600/10 mix-blend-overlay group-hover:opacity-0 transition-opacity duration-1000" />
+                    
+                    {/* Floating Badge */}
+                    <div className="absolute bottom-6 left-6 right-6 lg:left-auto lg:right-6 lg:w-48 bg-white/80 backdrop-blur-md p-4 rounded-2xl border border-white shadow-xl">
+                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Status</p>
+                       <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                          <p className="text-xs font-bold text-slate-800">Operational Hub</p>
+                       </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

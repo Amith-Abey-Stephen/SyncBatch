@@ -44,7 +44,7 @@ export default function Footer() {
             <ul className="space-y-4 text-sm font-bold">
               <li><Link href="/privacy" className="hover:text-primary-500 transition-all hover:translate-x-1 inline-block">Privacy Shield</Link></li>
               <li><Link href="/terms" className="hover:text-primary-500 transition-all hover:translate-x-1 inline-block">Service Terms</Link></li>
-              <li><Link href="/contact" className="hover:text-primary-500 transition-all hover:translate-x-1 inline-block">Contact Support</Link></li>
+              <li><Link href="/#contact" className="hover:text-primary-500 transition-all hover:translate-x-1 inline-block">Contact Support</Link></li>
             </ul>
           </div>
 

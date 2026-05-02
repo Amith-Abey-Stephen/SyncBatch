@@ -69,14 +69,17 @@ export default function ContactForm() {
           </div>
         </div>
         <div>
-          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Subject</label>
-          <input 
-            required
-            name="subject"
-            type="text" 
-            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold" 
-            placeholder="How can we help?" 
-          />
+          <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Inquiry Type</label>
+          <select 
+            name="type" 
+            className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm focus:outline-none focus:border-primary-600 focus:bg-white transition-all font-bold appearance-none cursor-pointer"
+          >
+            <option>Technical Support</option>
+            <option>Billing & Credits</option>
+            <option>Institutional/Enterprise Inquiry</option>
+            <option>Feature Request</option>
+            <option>Other</option>
+          </select>
         </div>
         <div>
           <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Message</label>
